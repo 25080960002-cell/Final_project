@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.npm-cache/
+.opencode/
+dev-server*.log
+dev.out
+dev.err
+server/dev.out
+server/dev.err
+.env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.vercel.example
+server/.env
+server/.env.*
+!server/.env.example

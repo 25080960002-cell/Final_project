@@ -1,0 +1,89 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mapan
+      MYSQL_USER: ${DB_USER:-mapan}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.docker}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env.docker}
+    volumes:
+      - mapan-db:/var/lib/mysql
+      - ./db/migrations/001_fase1_tenant_master.sql:/docker-entrypoint-initdb.d/01_fase1.sql:ro
+      - ./db/migrations/002_fase2_lahan.sql:/docker-entrypoint-initdb.d/02_fase2.sql:ro
+      - ./db/migrations/003_fase3_dashboard_records.sql:/docker-entrypoint-initdb.d/03_fase3.sql:ro
+      - ./db/migrations/004_auth_sessions.sql:/docker-entrypoint-initdb.d/04_auth.sql:ro
+      - ./db/seeds/000_reference_catalog.sql:/docker-entrypoint-initdb.d/05_reference_catalog.sql:ro
+      - ./db/migrations/005_media_objects.sql:/docker-entrypoint-initdb.d/06_media.sql:ro
+      - ./db/migrations/006_google_identities.sql:/docker-entrypoint-initdb.d/07_google_identities.sql:ro
+    - ./db/migrations/007_dashboard_records_refine.sql:/docker-entrypoint-initdb.d/08_dashboard_records_refine.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks: [internal]
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      TRUST_PROXY: "true"
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: mapan
+      DB_USER: ${DB_USER:-mapan}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.docker}
+      MEDIA_DIR: /data/media
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-8}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      MAPAN_INITIAL_ADMIN_EMAIL: ${MAPAN_INITIAL_ADMIN_EMAIL:-}
+      MAPAN_INITIAL_ADMIN_PASSWORD: ${MAPAN_INITIAL_ADMIN_PASSWORD:-}
+      MAPAN_INITIAL_ADMIN_NAME: ${MAPAN_INITIAL_ADMIN_NAME:-Administrator MAPAN}
+      MAPAN_INITIAL_ORG_NAME: ${MAPAN_INITIAL_ORG_NAME:-}
+      MAPAN_INITIAL_REGION_NAME: ${MAPAN_INITIAL_REGION_NAME:-}
+      MAPAN_INITIAL_REGION_LATITUDE: ${MAPAN_INITIAL_REGION_LATITUDE:-}
+      MAPAN_INITIAL_REGION_LONGITUDE: ${MAPAN_INITIAL_REGION_LONGITUDE:-}
+      MAPAN_ADMIN_EMAIL: ${MAPAN_ADMIN_EMAIL:-}
+      MAPAN_ADMIN_PASSWORD: ${MAPAN_ADMIN_PASSWORD:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mapan-media:/data/media
+    networks: [internal]
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+        VITE_ORGANIZATION_ID: "1"
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [internal]
+
+volumes:
+  mapan-db:
+  mapan-media:
+
+networks:
+  internal:
+    driver: bridge

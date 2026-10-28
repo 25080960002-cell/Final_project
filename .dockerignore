@@ -1,0 +1,16 @@
+node_modules
+server/node_modules
+dist
+server/.env
+.env.docker
+.env
+.env.*
+!.env.example
+!.env.docker.example
+server/.env.*
+!server/.env.example
+.git
+.codex
+.agents
+*.log
+server/uploads

@@ -1,0 +1,39 @@
+/* =========================================================
+   MAPAN — Type scale
+   Public Sans for reading, Fraunces for editorial headings.
+   The text-size preference has been removed; this is the
+   single, comfortable default scale.
+   ========================================================= */
+
+body { letter-spacing: 0.002em; }
+
+.nav-links a { font-size: 13.5px; }
+.drawer-links a { font-size: 16px; }
+.hero-pill { font-size: 10.5px; }
+.hero-lead { font-size: 16.5px; }
+.hero-note { font-size: 11.5px; }
+.hero-stats span { font-size: 11.5px; }
+
+.section-head p { font-size: 14.5px; }
+.value-card > p { font-size: 13.5px; }
+.how-head > p { font-size: 14.5px; }
+.how-card p { font-size: 12.5px; }
+.how-board-foot { font-size: 11.5px; }
+.commodity-copy p { font-size: 12.5px; }
+.explorer-copy > p { font-size: 14px; }
+.explorer-guide p { font-size: 12.5px; }
+.explorer-label b { font-size: 13px; }
+.story-copy > p { font-size: 14.5px; }
+.story-list li { font-size: 13px; }
+.testimonial-card p { font-size: 14.5px; }
+.testimonial-author b { font-size: 12.5px; }
+.faq-intro > p { font-size: 14px; }
+.faq-item button { font-size: 14.5px; }
+.faq-answer p { font-size: 13.5px; }
+.cta-copy p { font-size: 13.5px; }
+.footer-brand > p { font-size: 12.5px; }
+.footer-group a { font-size: 11.5px; }
+.footer-bottom { font-size: 10.5px; }
+
+.text-link { font-size: 13.5px; }
+.eyebrow { font-size: 11px; }
