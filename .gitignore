@@ -15,3 +15,8 @@ server/dev.err
 server/.env
 server/.env.*
 !server/.env.example
+!server/.env.production.example
+server/uploads/
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

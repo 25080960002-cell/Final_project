@@ -2,7 +2,7 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY index.html ./
+COPY index.html vite.config.js ./
 COPY src ./src
 ARG VITE_API_BASE_URL=
 ARG VITE_ORGANIZATION_ID=1

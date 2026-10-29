@@ -1,63 +1,98 @@
 ﻿# MAPAN API
 
-API multi-tenant untuk dashboard MAPAN. Stack: Node.js 22, Express 5, MySQL 8.4, dan `mysql2` dengan prepared statements.
+API multi-tenant untuk dashboard MAPAN. Stack: Node.js 22, Express 5, MySQL 8.4,
+dan `mysql2` dengan prepared statements.
 
 ## Menjalankan lokal
 
-1. Siapkan MySQL dan jalankan migrasi `001` sampai `006` secara berurutan. Untuk basis data seed, jalankan katalog referensi `db/seeds/000_reference_catalog.sql` setelah migrasi.
-2. Salin `server/.env.example` menjadi `server/.env`, lalu atur koneksi MySQL.
-3. `cd server`, lalu `npm install` dan `npm run dev`.
-4. Buka `http://localhost:5173/` untuk landing page. Masuk untuk data organisasi, atau buka `http://localhost:5173/#dashboard` untuk demo tanpa akses tulis.
+1. Nyalakan MySQL 8.
+2. Salin `.env.example` menjadi `.env`, lalu atur koneksi MySQL.
+3. `npm install`
+4. `npm run migrate` — menerapkan `../db/migrations/001–007` dan katalog referensi
+   secara berurutan (aman dijalankan ulang; progres disimpan di `schema_migrations`).
+5. `npm run dev` → `http://127.0.0.1:4000/api`
 
-API lokal: `http://127.0.0.1:4000/api`. Health check: `GET /api/health`.
+Buat administrator pertama pada database kosong:
+
+```bash
+# isi MAPAN_INITIAL_* di .env terlebih dahulu
+npm run provision-admin
+```
+
+## Perintah
+
+| Perintah | Fungsi |
+| --- | --- |
+| `npm run dev` | API dengan auto-reload |
+| `npm start` | API produksi |
+| `npm run migrate` | Terapkan migrasi yang belum dijalankan |
+| `npm run migrate -- --status` | Lihat status migrasi |
+| `npm run migrate -- --baseline` | Tandai database lama sebagai sudah termigrasi |
+| `npm run provision-admin` | Buat organisasi + admin pertama (DB kosong) |
+| `npm run set-password` | Ganti kata sandi admin yang sudah ada |
+| `npm run check-db` | Cek isi database sampel lokal |
 
 ## Konfigurasi
 
 | Variabel | Default | Keterangan |
 | --- | --- | --- |
-| `HOST` | localhost (development), `0.0.0.0` (production) | Alamat bind server |
+| `HOST` | `localhost` (dev), `0.0.0.0` (prod) | Alamat bind server |
 | `PORT` | `4000` | Port API |
+| `TRUST_PROXY` | `false` | `true` atau jumlah hop proxy (Railway/Render: `true`) |
 | `DB_HOST`, `DB_PORT`, `DB_NAME` | `127.0.0.1`, `3306`, `mapan` | Alamat basis data |
-| `DB_USER`, `DB_PASSWORD` | `zian`, kosong | Kredensial MySQL lokal; ganti pada deployment |
+| `DB_USER`, `DB_PASSWORD` | `mapan`, kosong | Kredensial MySQL; ganti pada deployment |
 | `DB_POOL_MAX` | `10` | Batas koneksi |
-| `CORS_ORIGINS` | Vite localhost | Origin tambahan; origin same-host diizinkan |
+| `CORS_ORIGINS` | Vite localhost | Origin yang diizinkan; pola `https://*.vercel.app` didukung |
+| `COOKIE_SAME_SITE` | `lax` (dev), `none` (prod) | `none` wajib bila frontend & API beda domain |
+| `COOKIE_SECURE` | `false` (dev), `true` (prod) | Wajib `true` saat `SameSite=None` |
 | `SESSION_TTL_HOURS` | `8` | Umur sesi, rentang 1–168 jam |
-| `MEDIA_DIR` | `server/uploads` | Folder berkas; gunakan volume persisten |
+| `MEDIA_DIR` | `server/uploads` | Folder berkas; gunakan volume persisten di produksi |
 
-Jangan commit berkas `.env`. Pada mode production, cookie sesi memakai `Secure`; akses dashboard harus melalui HTTPS. Isi `CORS_ORIGINS` dengan domain frontend persis, misalnya `https://mapan.example.com`.
+Jangan commit `.env`. Pada production, API menolak start bila `DB_PASSWORD` kosong,
+placeholder, atau kurang dari 16 karakter. Contoh variabel produksi ada di
+[`.env.production.example`](.env.production.example).
 
 ## Endpoint utama
 
-Semua data tenant memakai sesi dan organisasi yang terikat ke sesi. Kesalahan memakai `{ error: { code, message } }`.
+Semua data tenant memakai sesi dan organisasi yang terikat ke sesi. Kesalahan memakai
+`{ error: { code, message } }`.
 
 | Method | Path | Fungsi |
 | --- | --- | --- |
 | `GET` | `/api/health` | Kesehatan API/MySQL |
 | `GET` | `/api/auth/session` | Memeriksa sesi cookie |
+| `POST` | `/api/auth/login` | Masuk dengan email + kata sandi |
 | `POST` | `/api/auth/logout` | Mencabut sesi |
-| `POST` | `/api/auth/invitation-info` | Memeriksa tautan undangan; token dikirim di body |
-| `POST` | `/api/auth/accept-invitation` | Membuat akun dan menerima undangan |
+| `POST` | `/api/auth/invitation-info` | Memeriksa tautan undangan |
+| `POST` | `/api/auth/accept-invitation` | Membuat akun dari undangan |
 | `GET/PATCH` | `/api/organizations/:orgId` | Profil organisasi |
 | `GET/PATCH` | `/api/organizations/:orgId/settings` | Preferensi organisasi |
 | `GET` | `/api/organizations/:orgId/dashboard` | Ringkasan KPI |
 | `GET/POST` | `/api/organizations/:orgId/plots` | Daftar/buat petak |
-| `GET` | `/api/organizations/:orgId/map/plots` | GeoJSON batas petak yang tersedia |
-| `GET/POST` | `/api/organizations/:orgId/invitations` | Kelola undangan; link ditampilkan sekali ketika dibuat |
-| `POST` | `/api/organizations/:orgId/invitations/:invitationId/resend` | Buat link baru untuk undangan pending |
-| `GET/POST/PATCH/DELETE` | `/api/organizations/:orgId/records/:type[/:recordId]` | Catatan siklus, tugas, aktivitas, laporan, scan, diskusi |
-| `POST/GET` | `/api/organizations/:orgId/media[/:mediaId]` | Unggah/ambil JPEG, PNG, WEBP tenant (maks. 10 MB) |
-| `GET` | `/api/organizations/:orgId/weather` | Cuaca dan prakiraan lima hari Open-Meteo |
-| `GET` | `/api/organizations/:orgId/predictions` | Benchmark hasil komoditas dari siklus aktif |
-| `GET` | `/api/reference/*` | Katalog komoditas, gejala, dan wilayah |
+| `GET` | `/api/organizations/:orgId/map/plots` | GeoJSON batas petak |
+| `GET/POST` | `/api/organizations/:orgId/invitations` | Kelola undangan |
+| `POST` | `/api/organizations/:orgId/invitations/:id/resend` | Buat ulang tautan undangan |
+| `GET/POST/PATCH/DELETE` | `/api/organizations/:orgId/records/:type[/:id]` | Catatan operasional |
+| `POST/GET` | `/api/organizations/:orgId/media[/:id]` | Unggah/ambil gambar (maks. 10 MB) |
+| `GET` | `/api/organizations/:orgId/weather` | Cuaca & prakiraan Open-Meteo |
+| `GET` | `/api/organizations/:orgId/predictions` | Benchmark hasil komoditas |
+| `GET` | `/api/reference/*` | Katalog komoditas, gejala, wilayah |
 
-Penulisan profil/pengaturan/undangan/anggota memerlukan administrator. Pembuatan petak dan siklus memerlukan administrator atau manajer lapangan. Catatan operasional dapat ditulis administrator, manajer lapangan, atau petani. Penyuluh hanya mendapat akses baca jika opsi **Akses baca untuk penyuluh** diaktifkan administrator pada pengaturan organisasi.
+Jenis `records` yang didukung: `cycle`, `task`, `activity`, `report`, `scan`,
+`community_post`.
 
-Undangan tidak mengirim email otomatis; administrator membagikan tautan satu kali yang diterima API. Token baru disimpan dalam bentuk hash; token lama tetap dapat dipakai saat transisi. Penerima menerima undangan dengan email terverifikasi yang sama dengan alamat undangan. Scan menyimpan foto dan gejala, tanpa diagnosis otomatis. Prediksi memakai benchmark hasil komoditas, bukan AI. Cuaca memerlukan koordinat region dan akses keluar server ke Open-Meteo.
+Penulisan profil/pengaturan/undangan/anggota memerlukan administrator. Pembuatan
+petak dan siklus memerlukan administrator atau manajer lapangan. Catatan operasional
+dapat ditulis administrator, manajer lapangan, atau petani. Penyuluh hanya mendapat
+akses baca bila opsi **Akses baca untuk penyuluh** diaktifkan.
 
-Pada production, API menolak start bila `DB_PASSWORD` kosong, masih berupa placeholder, atau kurang dari 16 karakter. Isi secret database acak sebelum menjalankan container.
+Undangan tidak mengirim email otomatis. Scan menyimpan foto dan gejala tanpa diagnosis
+otomatis. Prediksi memakai benchmark komoditas, bukan AI. Cuaca memerlukan koordinat
+region dan akses keluar server ke Open-Meteo.
 
-## Provisioning dan Docker
+## Docker
 
-Untuk database kosong, Compose menjalankan migrasi 001–006 dan katalog referensi saat volume MySQL pertama kali dibuat. Buat administrator pertama dengan mengisi sementara variabel `MAPAN_INITIAL_*` di `.env.docker`, lalu jalankan `docker compose --env-file .env.docker run --rm api npm run provision-admin`. Hapus variabel email/kata sandi administrator setelah provisioning. Endpoint tenant dilindungi sesi cookie dan peran MAPAN.
-
-Pemeriksaan isi seed `npm run check-db` hanya berlaku pada database sampel lokal (24 petak, 125 ha), bukan basis data deployment kosong.
+`Dockerfile` menjalankan API sebagai user `node` dan siap dipakai Railway/Render
+(lihat `railway.json`). Migrasi tidak dijalankan otomatis di container; jalankan
+`npm run migrate` dari mesin lokal dengan kredensial database produksi. Untuk VPS,
+`docker-compose.yml` di root repo sudah menyertakan MySQL dan volume media.

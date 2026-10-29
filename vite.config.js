@@ -1,0 +1,16 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+// Konfigurasi build produksi. `dist/` dipakai Vercel (lihat vercel.json).
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    chunkSizeWarningLimit: 900,
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
+});

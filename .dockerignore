@@ -9,8 +9,13 @@ server/.env
 !.env.docker.example
 server/.env.*
 !server/.env.example
+!server/.env.production.example
 .git
-.codex
-.agents
+.github
+.opencode
+docs
+design-system
+db
 *.log
 server/uploads
+README.md

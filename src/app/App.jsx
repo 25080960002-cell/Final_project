@@ -1,9 +1,20 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { Suspense, useEffect, useRef, useState } from 'react';
 import LandingPage from '../features/landing/LandingPage';
-import AboutPage from '../features/about/AboutPage';
-import Dashboard from '../features/dashboard/Dashboard';
 import { DashboardDataProvider } from '../features/dashboard/data/DashboardDataContext';
-import AuthPage from '../features/auth/AuthPage';
+
+// Halaman berat (dashboard & grafik) dimuat terpisah agar landing page cepat.
+const AboutPage = React.lazy(() => import('../features/about/AboutPage'));
+const Dashboard = React.lazy(() => import('../features/dashboard/Dashboard'));
+const AuthPage = React.lazy(() => import('../features/auth/AuthPage'));
+
+const pageFallback = (
+  <div
+    role="status"
+    style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'inherit' }}
+  >
+    Memuat…
+  </div>
+);
 
 function viewForHash(hash) {
   if (hash.startsWith('undangan/')) return 'auth';
@@ -117,29 +128,37 @@ export default function App() {
   if (view === 'auth') {
     const hash = window.location.hash.replace(/^#/, '');
     const invitationToken = hash.startsWith('undangan/') ? hash.split('/').at(-1) : '';
-    return <AuthPage invitationToken={invitationToken} initialMode={hash === 'daftar' ? 'register' : 'login'} onSuccess={openDashboard} onBack={openLanding} />;
+    return (
+      <Suspense fallback={pageFallback}>
+        <AuthPage invitationToken={invitationToken} initialMode={hash === 'daftar' ? 'register' : 'login'} onSuccess={openDashboard} onBack={openLanding} />
+      </Suspense>
+    );
   }
   if (view === 'dashboard') {
     return (
-      <DashboardDataProvider>
-        <Dashboard
-          onHome={openLanding}
-          onLogin={openLogin}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-        />
-      </DashboardDataProvider>
+      <Suspense fallback={pageFallback}>
+        <DashboardDataProvider>
+          <Dashboard
+            onHome={openLanding}
+            onLogin={openLogin}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+          />
+        </DashboardDataProvider>
+      </Suspense>
     );
   }
 
   if (view === 'about') {
     return (
-      <AboutPage
-        onEnter={openLogin}
-        onSignup={openDemo}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-      />
+      <Suspense fallback={pageFallback}>
+        <AboutPage
+          onEnter={openLogin}
+          onSignup={openDemo}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
+      </Suspense>
     );
   }
 

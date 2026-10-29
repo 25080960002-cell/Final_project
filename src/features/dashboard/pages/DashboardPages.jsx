@@ -820,9 +820,10 @@ export function UsersPage({ notify }) {
     const member = {
       id: `i${invitation.id}`, name: invitation.name, email: invitation.email,
       role: form.role, status: 'Undangan', last: '—', tone: 'blue',
+      invitationId: invitation.id,
     };
     setRows((current) => [member, ...current]);
-    setInviteLink(`${window.location.origin}/#undangan/${invitation.organization_id}/${invitation.token}`);
+    setInviteLink(`${window.location.origin}/#undangan/${invitation.token}`);
     refresh().catch((error) => notify('Ringkasan anggota belum diperbarui', error.message));
     setForm({ name: '', email: '', role: 'Petani' });
     setOpen(false);
@@ -837,7 +838,7 @@ export function UsersPage({ notify }) {
   const shareInvitationAgain = async (member) => {
     try {
       const invitation = await resendInvitation(member.invitationId);
-      setInviteLink(`${window.location.origin}/#undangan/${invitation.organization_id}/${invitation.token}`);
+      setInviteLink(`${window.location.origin}/#undangan/${invitation.token}`);
       notify('Tautan undangan diperbarui', `Tautan baru dibuat untuk ${member.email}.`);
     } catch (error) { notify('Tautan undangan belum dibuat', error.message); }
   };

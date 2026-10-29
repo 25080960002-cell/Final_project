@@ -30,21 +30,6 @@ export const nav = [
   { id: 'pengaturan', label: 'Pengaturan', icon: Settings, group: 'LAINNYA' },
 ];
 
-export const yieldData = [
-  { month: 'Jan', now: 160, past: 120 },
-  { month: 'Feb', now: 210, past: 140 },
-  { month: 'Mar', now: 280, past: 180 },
-  { month: 'Apr', now: 240, past: 150 },
-  { month: 'Mei', now: 310, past: 220 },
-  { month: 'Jun', now: 260, past: 190 },
-  { month: 'Jul', now: 350, past: 250 },
-  { month: 'Agu', now: 330, past: 245 },
-  { month: 'Sep', now: 390, past: 280 },
-  { month: 'Okt', now: 420, past: 300 },
-  { month: 'Nov', now: 385, past: 290 },
-  { month: 'Des', now: 450, past: 320 },
-];
-
 export const plots = [
   { id: 'p1', name: 'Subak Sari', area: '12,4 ha', farmer: 'I Wayan Suarta', crop: 'Padi Inpari 32', phase: 'Vegetatif', status: 'Sehat', location: 'Tabanan, Bali', color: 'green', health: 94 },
   { id: 'p2', name: 'Lahan Mekar', area: '8,2 ha', farmer: 'Ni Made Rini', crop: 'Jagung Hibrida', phase: 'Generatif', status: 'Sehat', location: 'Tabanan, Bali', color: 'blue', health: 89 },
@@ -61,25 +46,12 @@ export const activities = [
   { title: 'Pemangkasan · Kebun Kedaton', plot: 'Dijadwalkan minggu ini', time: '3 hari lalu', tone: 'leaf', icon: 'Leaf' },
 ];
 
-export const initialTasks = [
-  { id: 't1', label: 'Periksa kelembapan tanah Blok Timur', meta: 'Pagi ini · I Ketut Arta', done: false },
-  { id: 't2', label: 'Setujui 3 permintaan bergabung', meta: 'Organisasi · menunggu', done: false },
-  { id: 't3', label: 'Tinjau prakiraan hujan pekan ini', meta: 'Cuaca & risiko', done: true },
-  { id: 't4', label: 'Kirim laporan bulanan koperasi', meta: 'Laporan · Oktober', done: false },
-];
-
 export const commodityShare = [
   { label: 'Padi', value: 42, tone: 'green' },
   { label: 'Jagung', value: 24, tone: 'gold' },
   { label: 'Cabai', value: 18, tone: 'red' },
   { label: 'Kopi', value: 11, tone: 'blue' },
   { label: 'Lainnya', value: 5, tone: 'neutral' },
-];
-
-export const notices = [
-  { id: 'n1', title: 'Prakiraan hujan ringan', meta: 'Wilayah Tabanan · 2 jam lalu', tone: 'blue', icon: 'CloudRain' },
-  { id: 'n2', title: '6 petak mendekati masa panen', meta: 'Siklus budidaya · kemarin', tone: 'green', icon: 'Sprout' },
-  { id: 'n3', title: 'Blok Timur perlu perhatian', meta: 'Kesehatan tanaman · 2 hari lalu', tone: 'gold', icon: 'ShieldAlert' },
 ];
 
 export const teamMembers = [
@@ -106,10 +78,4 @@ export const reports = [
   { id: 'r4', title: 'Laporan cuaca & risiko', desc: 'Prakiraan cuaca lima hari untuk wilayah organisasi.', period: 'Data langsung saat ekspor', icon: 'CloudSun', tone: 'violet', file: 'cuaca.csv' },
 ];
 
-export const weatherForecast = [
-  { day: 'Rab', date: '21 Okt', temp: 29, low: 22, rain: 15, tone: 'sun' },
-  { day: 'Kam', date: '22 Okt', temp: 27, low: 22, rain: 65, tone: 'rain' },
-  { day: 'Jum', date: '23 Okt', temp: 28, low: 21, rain: 30, tone: 'cloud' },
-  { day: 'Sab', date: '24 Okt', temp: 30, low: 22, rain: 10, tone: 'sun' },
-  { day: 'Min', date: '25 Okt', temp: 29, low: 21, rain: 20, tone: 'cloud' },
-];
+

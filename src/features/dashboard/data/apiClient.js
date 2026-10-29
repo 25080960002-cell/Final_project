@@ -8,13 +8,22 @@ import {
 } from './adapters';
 
 const frontendHost = window.location.hostname;
-const configuredBase = import.meta.env.VITE_API_BASE_URL;
-const localHost = frontendHost === 'localhost' || frontendHost === '127.0.0.1';
-const rawBase = configuredBase ?? `http://${frontendHost}:4000`;
-const alignedBase = localHost
-  ? String(rawBase).replace(/^http:\/\/(localhost|127\.0\.0\.1)(?=:\d+)/, `http://${frontendHost}`)
-  : rawBase;
-export const API_BASE = String(alignedBase).replace(/\/+$/, '');
+const isLocalHost = ['localhost', '127.0.0.1', '[::1]'].includes(frontendHost);
+const configuredBase = String(import.meta.env.VITE_API_BASE_URL ?? '').trim();
+
+function resolveApiBase() {
+  if (configuredBase) {
+    // Saat dev, samakan hostname agar cookie sesi tetap satu origin.
+    return isLocalHost
+      ? configuredBase.replace(/^http:\/\/(localhost|127\.0\.0\.1)(?=:\d+)/, `http://${frontendHost}`)
+      : configuredBase;
+  }
+  // Tanpa VITE_API_BASE_URL: lokal memakai API port 4000, sedangkan produksi
+  // memakai origin yang sama (reverse proxy) agar tidak menembak host yang salah.
+  return isLocalHost ? `http://${frontendHost}:4000` : '';
+}
+
+export const API_BASE = resolveApiBase().replace(/\/+$/, '');
 
 const parsedOrg = Number(import.meta.env.VITE_ORGANIZATION_ID ?? 1);
 export const ORGANIZATION_ID = Number.isInteger(parsedOrg) && parsedOrg > 0 ? parsedOrg : 1;

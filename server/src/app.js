@@ -14,6 +14,16 @@ import { predictionRouter } from './routes/predictions.js';
 import { mediaRouter } from './routes/media.js';
 import { requireAuth, requireExtensionReadAccess, requireTenant } from './auth.js';
 
+/** Cocokkan origin dengan daftar CORS_ORIGINS; pola `*` mengizinkan satu label domain. */
+function originAllowed(origin, patterns) {
+  return patterns.some((pattern) => {
+    if (pattern === '*') return true;
+    if (!pattern.includes('*')) return pattern === origin;
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[a-z0-9-]+');
+    return new RegExp(`^${escaped}$`, 'i').test(origin);
+  });
+}
+
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
@@ -33,7 +43,7 @@ export function createApp() {
 
   app.use((req, res, next) => cors({
       origin(origin, callback) {
-        if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
+        if (!origin || originAllowed(origin, config.corsOrigins)) return callback(null, true);
         try {
           const parsedOrigin = new URL(origin);
           if (['http:', 'https:'].includes(parsedOrigin.protocol) && parsedOrigin.host === req.get('host')) return callback(null, true);

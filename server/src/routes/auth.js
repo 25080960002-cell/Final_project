@@ -61,13 +61,18 @@ async function passwordMatches(password, stored) {
   return timingSafeEqual(actual, Buffer.from(expectedHex, 'hex'));
 }
 
+function cookieAttributes() {
+  const sameSite = config.cookieSameSite === 'none' ? 'None' : config.cookieSameSite === 'strict' ? 'Strict' : 'Lax';
+  return `HttpOnly; SameSite=${sameSite}; Path=/api${config.cookieSecure ? '; Secure' : ''}`;
+}
+
 function setSessionCookie(res, token) {
   const maxAge = config.sessionTtlHours * 60 * 60;
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; HttpOnly; SameSite=Lax; Path=/api; Max-Age=${maxAge}${config.env === 'production' ? '; Secure' : ''}`);
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${token}; ${cookieAttributes()}; Max-Age=${maxAge}`);
 }
 
 function clearSessionCookie(res) {
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/api; Max-Age=0${config.env === 'production' ? '; Secure' : ''}`);
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; ${cookieAttributes()}; Max-Age=0`);
 }
 
 authRouter.post('/auth/login', asyncHandler(async (req, res) => {

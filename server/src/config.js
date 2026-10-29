@@ -17,19 +17,34 @@ const toList = (value, fallback) =>
     .map((item) => item.trim())
     .filter(Boolean);
 
+const toTrustProxy = (value) => {
+  if (value === undefined || value === '') return false;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return toInt(value, false);
+};
+
+const isProductionEnv = process.env.NODE_ENV === 'production';
+
 export const config = {
   env: process.env.NODE_ENV ?? 'development',
   port: toInt(process.env.PORT, 4000),
-  host: process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1'),
-  trustProxy: process.env.TRUST_PROXY === 'true' ? 2 : false,
+  host: process.env.HOST ?? (isProductionEnv ? '0.0.0.0' : '127.0.0.1'),
+  trustProxy: toTrustProxy(process.env.TRUST_PROXY),
   sessionTtlHours: Math.min(Math.max(toInt(process.env.SESSION_TTL_HOURS, 8), 1), 168),
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
   mediaDirectory: process.env.MEDIA_DIR ?? path.resolve(here, '../uploads'),
   corsOrigins: toList(process.env.CORS_ORIGINS, 'http://localhost:5173,http://127.0.0.1:5173'),
+  // Frontend Vercel dan API Railway berada pada domain berbeda, sehingga cookie
+  // cross-site wajib SameSite=None; Secure. Pada development tetap Lax.
+  cookieSameSite: (process.env.COOKIE_SAME_SITE ?? (isProductionEnv ? 'none' : 'lax')).toLowerCase(),
+  cookieSecure: process.env.COOKIE_SECURE === undefined
+    ? isProductionEnv
+    : process.env.COOKIE_SECURE === 'true',
   db: {
     host: process.env.DB_HOST ?? '127.0.0.1',
     port: toInt(process.env.DB_PORT, 3306),
-    user: process.env.DB_USER ?? 'zian',
+    user: process.env.DB_USER ?? 'mapan',
     password: process.env.DB_PASSWORD ?? '',
     database: process.env.DB_NAME ?? 'mapan',
     connectionLimit: toInt(process.env.DB_POOL_MAX, 10),
@@ -42,6 +57,12 @@ export function validateConfig() {
   const errors = [];
   if (config.port < 1 || config.port > 65535) errors.push('PORT harus berada pada rentang 1–65535.');
   if (config.db.connectionLimit < 1 || config.db.connectionLimit > 100) errors.push('DB_POOL_MAX harus berada pada rentang 1–100.');
+  if (!['lax', 'strict', 'none'].includes(config.cookieSameSite)) {
+    errors.push('COOKIE_SAME_SITE harus lax, strict, atau none.');
+  }
+  if (config.cookieSameSite === 'none' && !config.cookieSecure) {
+    errors.push('COOKIE_SAME_SITE=none memerlukan COOKIE_SECURE=true (HTTPS).');
+  }
   if (isProduction) {
     if (!config.db.password || config.db.password.length < 16 || /^(ganti_|change.?me|password)/i.test(config.db.password)) {
       errors.push('DB_PASSWORD production wajib diisi dengan secret acak minimal 16 karakter.');
