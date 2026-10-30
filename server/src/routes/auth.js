@@ -11,7 +11,8 @@ const scrypt = promisify(scryptCallback);
 export const authRouter = Router();
 const attempts = new Map();
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_ATTEMPTS = 8;
+const MAX_ATTEMPTS = 8; // per email: ketat terhadap tebak sandi satu akun
+const MAX_ATTEMPTS_PER_IP = 40; // per IP: longgar agar jaringan bersama (sekolah/desa/warnet) tidak saling mengunci
 const MAX_TRACKED_IDENTITIES = 5000;
 let lastPrunedAt = 0;
 
@@ -48,7 +49,10 @@ authRouter.post('/auth/invitation-info', asyncHandler(async (req, res) => {
 
 function publicSession(auth) {
   return {
-    user: { id: auth.user_id, name: auth.full_name, email: auth.email, role: auth.role },
+    user: {
+      id: auth.user_id, name: auth.full_name, email: auth.email, role: auth.role,
+      avatar_url: auth.avatar_path ? '/api/account/avatar' : null,
+    },
     organization_id: auth.organization_id,
   };
 }
@@ -91,11 +95,11 @@ authRouter.post('/auth/login', asyncHandler(async (req, res) => {
   const recentAttempts = new Map(attemptKeys.map((key) => [
     key, (attempts.get(key) ?? []).filter((timestamp) => now - timestamp < WINDOW_MS),
   ]));
-  if ([...recentAttempts.values()].some((recent) => recent.length >= MAX_ATTEMPTS)) {
+  if ([...recentAttempts].some(([key, recent]) => recent.length >= (key.startsWith('ip:') ? MAX_ATTEMPTS_PER_IP : MAX_ATTEMPTS))) {
     throw new HttpError(429, 'TERLALU_BANYAK_PERCOBAAN', 'Terlalu banyak percobaan masuk. Coba lagi beberapa menit lagi.');
   }
   const rows = await query(
-    `SELECT id, full_name, email, password_hash
+    `SELECT id, full_name, email, password_hash, avatar_path
        FROM users
       WHERE LOWER(email) = ? AND status = 'aktif' AND deleted_at IS NULL LIMIT 1`,
     [email],
@@ -145,6 +149,7 @@ authRouter.post('/auth/login', asyncHandler(async (req, res) => {
   res.json({ data: publicSession({
     user_id: rows[0].id, full_name: rows[0].full_name,
     email: rows[0].email, role: selectedMembership.role, organization_id: selectedMembership.organization_id,
+    avatar_path: rows[0].avatar_path ?? null,
   }) });
 }));
 
@@ -437,3 +442,5 @@ authRouter.post('/auth/logout', requireAuth, asyncHandler(async (req, res) => {
   clearSessionCookie(res);
   res.json({ data: { logged_out: true } });
 }));
+
+export { passwordMatches, publicSession, setSessionCookie, clearSessionCookie };

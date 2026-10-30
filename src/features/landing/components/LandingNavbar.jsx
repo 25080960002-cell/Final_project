@@ -21,6 +21,7 @@ const aboutLinks = [
 
 export default function LandingNavbar({
   onEnter,
+  onRegister,
   onSignup,
   theme = 'light',
   onThemeToggle,
@@ -100,10 +101,6 @@ export default function LandingNavbar({
     setMenuOpen(false);
     onEnter?.();
   };
-  const signup = () => {
-    setMenuOpen(false);
-    onSignup?.();
-  };
 
   return (
     <>
@@ -129,7 +126,7 @@ export default function LandingNavbar({
 
           <div className="nav-actions">
             <Button variant="outline" onClick={enter} className="nav-login">Masuk</Button>
-            <Button onClick={signup} className="nav-cta">Lihat demo <ArrowUpRight size={15} /></Button>
+            <a href="#daftar" className="btn btn-primary btn-md nav-cta">Buat akun <ArrowUpRight size={15} /></a>
             <button
               type="button"
               className="nav-burger"
@@ -171,7 +168,7 @@ export default function LandingNavbar({
             </div>
             <div className="drawer-actions">
               <Button variant="outline" onClick={enter}>Masuk</Button>
-              <Button onClick={signup}>Lihat demo</Button>
+              <a href="#daftar" className="btn btn-primary btn-md" onClick={() => setMenuOpen(false)}>Buat akun</a>
             </div>
           </div>
         </div>

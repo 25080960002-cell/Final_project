@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   ArrowRight,
@@ -20,8 +20,11 @@ import {
   Layers,
   Mail,
   MapPin,
+  KeyRound,
   MapPinned,
+  Pencil,
   Plus,
+  RefreshCw,
   Search,
   Settings,
   Shield,
@@ -29,6 +32,7 @@ import {
   Smartphone,
   Sprout,
   Sun,
+  Trash2,
   TrendingUp,
   Users,
   Wheat,
@@ -51,8 +55,10 @@ import {
   reports,
 } from '../data/dashboard';
 import { useDashboardData } from '../data/DashboardDataContext';
-import { createInvitation, createPlot, createRecord, fetchInvitations, fetchMapPlots, fetchPlotDetail, fetchRecords, fetchRecordsSummary, resendInvitation, updateMember, updateOrganization, updateOrganizationSettings, updateRecord, fetchPredictions, fetchWeather } from '../data/apiClient';
+import { changePassword, createInvitation, createPlot, deletePlot, updatePlot, updateProfile, createRecord, fetchInvitations, fetchMapPlots, fetchPlotDetail, fetchRecords, fetchRecordsSummary, resendInvitation, updateMember, updateOrganization, updateOrganizationSettings, updateRecord, fetchPredictions, fetchWeather } from '../data/apiClient';
 import { adaptPlot, formatNumber } from '../data/adapters';
+import { passwordChecks, passwordStrength } from '../../../shared/lib/password';
+import { isGoogleMapsConfigured, loadGoogleMaps } from '../../../shared/lib/googleMaps';
 import riceTerraces from '../../landing/assets/images/rice-terraces.jpg';
 import paddyPlanting from '../../landing/assets/images/paddy-planting.jpg';
 import harvestCommunity from '../../landing/assets/images/harvest-community.jpg';
@@ -99,14 +105,48 @@ function SearchField({ value, onChange, placeholder = 'Cari data...' }) {
   );
 }
 
+function OnboardingCard({ summary, hasActivity, setPage, onDismiss }) {
+  const steps = [
+    { id: 'akun', label: 'Akun dan organisasi dibuat', done: true },
+    { id: 'lahan', label: 'Tambahkan lahan pertama', hint: 'Catat nama petak, luas, dan komoditasnya.', done: (summary?.plot_total ?? 0) > 0, page: 'lahan' },
+    { id: 'anggota', label: 'Undang petani atau pengurus', hint: 'Bagikan tautan undangan agar tim bisa mencatat bersama.', done: (summary?.member_active ?? 0) > 1 || (summary?.invitation_pending ?? 0) > 0, page: 'pengguna' },
+    { id: 'aktivitas', label: 'Catat aktivitas pertama', hint: 'Pemupukan, penyemprotan, atau pengamatan lapangan.', done: hasActivity, page: 'aktivitas' },
+    { id: 'cuaca', label: 'Cek prakiraan cuaca wilayah', hint: 'Butuh koordinat wilayah di profil organisasi.', done: false, page: 'cuaca', optional: true },
+  ];
+  const required = steps.filter((step) => !step.optional);
+  const doneCount = required.filter((step) => step.done).length;
+  const next = steps.find((step) => !step.done);
+  return (
+    <section className="panel onboarding-card" aria-label="Langkah awal">
+      <div className="onboarding-head">
+        <div><span className="eyebrow">LANGKAH AWAL</span><h3>Siapkan ruang kerja Anda</h3><p>{doneCount} dari {required.length} langkah selesai.</p></div>
+        <button type="button" className="onboarding-dismiss" onClick={onDismiss} aria-label="Sembunyikan langkah awal"><X size={16} /></button>
+      </div>
+      <Progress value={Math.round((doneCount / required.length) * 100)} tone="green" />
+      <ol className="onboarding-steps">
+        {steps.map((step) => (
+          <li key={step.id} className={step.done ? 'is-done' : ''}>
+            <span className="onboarding-mark">{step.done ? <Check size={14} /> : null}</span>
+            <span><b>{step.label}</b>{step.hint && !step.done && <small>{step.hint}</small>}</span>
+            {!step.done && step.page && <Button variant={step.id === next?.id ? 'primary' : 'secondary'} onClick={() => setPage(step.page)}>Buka <ArrowRight size={14} /></Button>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 export function DashboardHome({ setPage, notify }) {
   const [tasks, setTasks] = useState([]);
   const [prediction, setPrediction] = useState(null);
   const [weather, setWeather] = useState(null);
   const [weatherError, setWeatherError] = useState('');
   const [activities, setActivities] = useState([]);
-  const { summary, session, organization } = useDashboardData();
+  const { summary, session, organization, demo } = useDashboardData();
+  const [onboardingHidden, setOnboardingHidden] = useState(false);
   const readOnly = !session || session.user?.role === 'penyuluh';
+  const needsOnboarding = !demo && !onboardingHidden && session?.user?.role === 'administrator'
+    && ((summary?.plot_total ?? 0) === 0 || (summary?.member_active ?? 0) <= 1);
   const showWeather = organization?.raw?.settings?.weather_daily ?? true;
 
   useEffect(() => {
@@ -186,13 +226,15 @@ export function DashboardHome({ setPage, notify }) {
         <div>
           <span className="pill pill-soft"><span className="live-dot" />{organization?.name ?? 'Ruang kerja MAPAN'}</span>
           <h2>Selamat datang, <em>{session?.user?.name?.split(' ')[0] ?? 'Pengguna'}</em>.</h2>
-          <p>Berikut ringkasan lahan dan kegiatan koperasi Anda hari ini.</p>
+          <p>Berikut ringkasan lahan dan kegiatan organisasi Anda hari ini.</p>
         </div>
         <div className="overview-actions">
           <Button variant="secondary" onClick={() => setPage('scan')}><Zap size={15} /> Scan tanaman</Button>
           <Button onClick={() => setPage('lahan')}><Plus size={15} /> Tambah lahan</Button>
         </div>
       </section>
+
+      {needsOnboarding && <OnboardingCard summary={summary} hasActivity={activities.length > 0} setPage={setPage} onDismiss={() => setOnboardingHidden(true)} />}
 
       <div className="stats-grid">
         <Stat
@@ -232,10 +274,22 @@ export function DashboardHome({ setPage, notify }) {
   );
 }
 
-function PlotDetailModal({ plotId, onClose }) {
+const PLOT_STATUS_OPTIONS = [
+  ['sehat', 'Sehat'], ['perhatian', 'Perhatian'], ['kritis', 'Kritis'], ['tidak_aktif', 'Tidak aktif'],
+];
+const IRRIGATION_OPTIONS = [
+  ['', 'Belum diatur'], ['irigasi_teknis', 'Irigasi teknis'], ['tadah_hujan', 'Tadah hujan'], ['lebak', 'Lebak / rawa'], ['lainnya', 'Lainnya'],
+];
+
+function PlotDetailModal({ plotId, onClose, canManage = false, onChanged, notify }) {
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({});
+  const [busy, setBusy] = useState(false);
+
   useEffect(() => {
+    setDetail(null); setError(''); setEditing(false);
     if (!plotId) return undefined;
     const controller = new AbortController();
     fetchPlotDetail(plotId, controller.signal).then(setDetail).catch((cause) => {
@@ -244,14 +298,73 @@ function PlotDetailModal({ plotId, onClose }) {
     return () => controller.abort();
   }, [plotId]);
 
+  const startEdit = () => {
+    setForm({
+      name: detail.name ?? '', area_ha: String(detail.area_ha ?? ''), status: detail.status ?? 'sehat',
+      irrigation_type: detail.irrigation_type ?? '', soil_type: detail.soil_type ?? '', address: detail.address ?? '',
+    });
+    setEditing(true);
+  };
+
+  const save = async (event) => {
+    event?.preventDefault();
+    const area = Number(String(form.area_ha).replace(',', '.'));
+    if (!form.name.trim()) { notify?.('Nama lahan wajib diisi', 'Isi nama lahan lalu simpan lagi.'); return; }
+    if (!Number.isFinite(area) || area <= 0) { notify?.('Luas tidak valid', 'Luas harus berupa angka lebih dari nol.'); return; }
+    setBusy(true);
+    try {
+      const updated = await updatePlot(plotId, {
+        name: form.name.trim(), area_ha: area, status: form.status,
+        irrigation_type: form.irrigation_type || null, soil_type: form.soil_type, address: form.address,
+      });
+      setDetail((current) => ({ ...current, ...updated }));
+      setEditing(false);
+      notify?.('Lahan diperbarui', updated.name);
+      onChanged?.();
+    } catch (cause) {
+      notify?.('Perubahan belum tersimpan', cause.message);
+    } finally { setBusy(false); }
+  };
+
+  const remove = async () => {
+    if (!window.confirm(`Hapus lahan "${detail.name}"? Lahan akan disembunyikan dari daftar dan ringkasan.`)) return;
+    setBusy(true);
+    try {
+      await deletePlot(plotId);
+      notify?.('Lahan dihapus', detail.name);
+      onChanged?.();
+      onClose();
+    } catch (cause) {
+      notify?.('Lahan belum terhapus', cause.message);
+    } finally { setBusy(false); }
+  };
+
+  const footer = detail && canManage ? (
+    editing
+      ? <><Button variant="ghost" onClick={() => setEditing(false)} disabled={busy}>Batal</Button><Button onClick={save} disabled={busy}><Check size={15} /> Simpan perubahan</Button></>
+      : <><Button variant="ghost" onClick={remove} disabled={busy}><Trash2 size={15} /> Hapus lahan</Button><Button variant="secondary" onClick={startEdit}><Pencil size={15} /> Ubah data</Button></>
+  ) : undefined;
+
   return (
-    <Modal open={Boolean(plotId)} onClose={onClose} title={detail?.name ?? 'Detail lahan'} description="Informasi lahan dan data lapangan dari organisasi.">
-      {error ? <p className="form-error" role="alert">Data lahan gagal dimuat: {error}</p> : !detail ? <p className="muted-cell" role="status">Memuat data lahan…</p> : (
+    <Modal open={Boolean(plotId)} onClose={onClose} title={detail?.name ?? 'Detail lahan'} description="Informasi lahan dan data lapangan dari organisasi." footer={footer}>
+      {error ? <p className="form-error" role="alert">Data lahan gagal dimuat: {error}</p> : !detail ? <p className="muted-cell" role="status">Memuat data lahan…</p> : editing ? (
+        <form className="form-grid" onSubmit={save}>
+          <label className="field field-full">Nama lahan<input required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+          <label className="field">Luas (ha)<input required inputMode="decimal" value={form.area_ha} onChange={(event) => setForm({ ...form, area_ha: event.target.value })} /></label>
+          <label className="field">Status<select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>{PLOT_STATUS_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label className="field">Pengairan<select value={form.irrigation_type} onChange={(event) => setForm({ ...form, irrigation_type: event.target.value })}>{IRRIGATION_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label className="field">Jenis tanah<input maxLength={60} value={form.soil_type} onChange={(event) => setForm({ ...form, soil_type: event.target.value })} placeholder="Aluvial, latosol…" /></label>
+          <label className="field field-full">Alamat / patokan lokasi<input maxLength={255} value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} /></label>
+        </form>
+      ) : (
         <div className="form-grid">
           <div className="field"><span>Kode lahan</span><b>{detail.code}</b></div>
           <div className="field"><span>Luas terdaftar</span><b>{formatNumber(detail.area_ha)} ha</b></div>
-          <div className="field"><span>Status</span><b>{detail.status}</b></div>
+          <div className="field"><span>Status</span><b>{PLOT_STATUS_OPTIONS.find(([value]) => value === detail.status)?.[1] ?? detail.status}</b></div>
+          <div className="field"><span>Pengairan</span><b>{IRRIGATION_OPTIONS.find(([value]) => value === (detail.irrigation_type ?? ''))?.[1] ?? '—'}</b></div>
+          <div className="field"><span>Jenis tanah</span><b>{detail.soil_type || '—'}</b></div>
           <div className="field"><span>Wilayah</span><b>{detail.location?.label ?? detail.location?.region ?? 'Belum diatur'}</b></div>
+          <div className="field field-full"><span>Alamat / patokan</span><b>{detail.address || '—'}</b></div>
           <div className="field"><span>Kelompok tani</span><b>{detail.farm_group?.name ?? 'Belum ditautkan'}</b></div>
           <div className="field"><span>Pengelola</span><b>{detail.managers?.map((manager) => manager.full_name).join(', ') || 'Belum ditetapkan'}</b></div>
           <div className="field field-full"><span>Riwayat kesehatan</span><b>{detail.health_history?.length ? detail.health_history.map((item) => `${item.score}% · ${new Date(item.recorded_at).toLocaleDateString('id-ID')}`).join(' | ') : 'Belum ada catatan kesehatan'}</b></div>
@@ -297,6 +410,13 @@ export function LandPage({ notify }) {
   const totalArea = rows.reduce((sum, plot) => sum + (Number(plot.area_ha) || 0), 0);
   const regionTotal = new Set(rows.map((plot) => plot.location).filter(Boolean)).size;
 
+  const openAddLand = () => {
+    const eligible = teamMembers.filter((member) => ['Petani', 'Manajer lapangan', 'Administrator'].includes(member.role) && member.status === 'Aktif');
+    const me = eligible.find((member) => Number(member.user_id) === Number(session?.user?.id));
+    setForm((current) => ({ ...current, farmer_id: current.farmer_id || String(me?.user_id ?? eligible[0]?.user_id ?? '') }));
+    setOpen(true);
+  };
+
   const addLand = async (event) => {
     event.preventDefault();
     if (!canManage) return;
@@ -333,7 +453,7 @@ export function LandPage({ notify }) {
         eyebrow="MANAJEMEN LAHAN"
         title="Semua lahan"
         desc="Pantau kondisi petak, komoditas, dan petani pengelola dalam satu tempat."
-        action={<div className="head-actions"><Button variant="secondary" onClick={exportRows}><Download size={15} /> Ekspor</Button><Button disabled={!canManage} title={!canManage ? 'Perlu peran administrator atau manajer lapangan' : undefined} onClick={() => setOpen(true)}><Plus size={16} /> Tambah lahan</Button></div>}
+        action={<div className="head-actions"><Button variant="secondary" onClick={exportRows}><Download size={15} /> Ekspor</Button><Button disabled={!canManage} title={!canManage ? 'Perlu peran administrator atau manajer lapangan' : undefined} onClick={openAddLand}><Plus size={16} /> Tambah lahan</Button></div>}
       />
 
       <div className="stats-grid stats-grid-3">
@@ -352,6 +472,7 @@ export function LandPage({ notify }) {
                 <option>Semua</option>
                 <option>Sehat</option>
                 <option>Perhatian</option>
+                <option>Kritis</option>
               </select>
               <ChevronDown size={13} />
             </label>
@@ -395,7 +516,10 @@ export function LandPage({ notify }) {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && (
+          {rows.length === 0 && (
+            <EmptyState icon={MapPinned} title="Belum ada lahan" description={canManage ? 'Tambahkan petak lahan pertama Anda untuk mulai mencatat siklus tanam, aktivitas, dan estimasi panen.' : 'Administrator atau manajer lapangan belum menambahkan lahan.'} action={canManage ? <Button onClick={openAddLand}><Plus size={15} /> Tambah lahan pertama</Button> : undefined} />
+          )}
+          {rows.length > 0 && filtered.length === 0 && (
             <EmptyState icon={Search} title="Lahan tidak ditemukan" description="Coba kata kunci atau filter status yang berbeda." />
           )}
         </div>
@@ -421,12 +545,12 @@ export function LandPage({ notify }) {
         <form className="form-grid" onSubmit={addLand}>
           <label className="field field-full">Nama lahan<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Contoh: Subak Sari" /></label>
           <label className="field">Luas (ha)<input required value={form.area} onChange={(event) => setForm({ ...form, area: event.target.value })} placeholder="8,4" inputMode="decimal" /></label>
-          <label className="field">Petani pengelola<select required value={form.farmer_id} onChange={(event) => setForm({ ...form, farmer_id: event.target.value })}><option value="">Pilih petani</option>{teamMembers.filter((member) => ['Petani', 'Manajer lapangan'].includes(member.role) && member.status === 'Aktif').map((member) => <option key={member.user_id} value={member.user_id}>{member.name}</option>)}</select></label>
+          <label className="field">Petani pengelola<select required value={form.farmer_id} onChange={(event) => setForm({ ...form, farmer_id: event.target.value })}><option value="">Pilih petani</option>{teamMembers.filter((member) => ['Petani', 'Manajer lapangan', 'Administrator'].includes(member.role) && member.status === 'Aktif').map((member) => <option key={member.user_id} value={member.user_id}>{member.name}</option>)}</select></label>
           <label className="field">Komoditas<input required value={form.crop} onChange={(event) => setForm({ ...form, crop: event.target.value })} placeholder="Padi, cabai, kopi..." /></label>
           <label className="field">Wilayah<input value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} placeholder="Tabanan, Bali" /></label>
         </form>
       </Modal>
-      <PlotDetailModal plotId={detailPlotId} onClose={() => setDetailPlotId(null)} />
+      <PlotDetailModal plotId={detailPlotId} onClose={() => setDetailPlotId(null)} canManage={canManage} notify={notify} onChanged={() => refresh().catch((error) => notify('Daftar belum diperbarui', error.message))} />
     </div>
   );
 }
@@ -470,11 +594,32 @@ export function ActivitiesPage({ notify }) {
   return (
     <div className="page-stack">
       <PageHead eyebrow="CATATAN LAPANGAN" title="Log aktivitas" desc="Semua aktivitas lapangan yang tersimpan untuk organisasi." />
-      <section className="panel table-panel">
-        <div className="panel-head"><div><span className="eyebrow">AKTIVITAS TERSIMPAN</span><h2>{records.length} catatan</h2></div><Button variant="secondary" onClick={load}>Muat ulang</Button></div>
-        {!readOnly && <form className="task-add" onSubmit={save}><input required maxLength={180} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Catat kegiatan lapangan..." aria-label="Aktivitas baru" /><Button type="submit" disabled={busy || !title.trim()}><Check size={15} /> Simpan</Button></form>}
+      <section className="panel activity-panel log-panel">
+        <div className="panel-head">
+          <div><span className="eyebrow">AKTIVITAS TERSIMPAN</span><h2>Riwayat kegiatan</h2><p>Rekam pekerjaan lapangan agar tim tahu apa yang sudah dikerjakan.</p></div>
+          <div className="log-head-actions">
+            <span className="chip">{records.length} catatan</span>
+            <Button variant="secondary" onClick={load}><RefreshCw size={14} /> Muat ulang</Button>
+          </div>
+        </div>
+        {!readOnly && (
+          <form className="task-add log-composer" onSubmit={save}>
+            <span className="log-composer-icon"><Activity size={16} /></span>
+            <input required maxLength={180} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Catat kegiatan lapangan, contoh: Pengairan berselangpetak..." aria-label="Aktivitas baru" />
+            <Button type="submit" disabled={busy || !title.trim()}>{busy ? '...' : <><Check size={15} /> Simpan</>}</Button>
+          </form>
+        )}
         {error && <p className="form-error" role="alert">Aktivitas gagal dimuat: {error}</p>}
-        <div className="activity-list">{records.map((record) => <article className="activity-row" key={record.id}><span className="activity-icon tone-green"><Activity size={16} /></span><div className="activity-copy"><b>{record.title}</b><small>{record.payload?.description ?? record.payload?.plot ?? 'Aktivitas lapangan'}</small></div><time>{record.created_at ? new Date(record.created_at).toLocaleString('id-ID') : ''}</time></article>)}{!error && records.length === 0 && <p className="muted-cell">Belum ada aktivitas tersimpan.</p>}</div>
+        <div className="activity-list log-list">{records.map((record, index) => (
+          <article className="activity-row log-row" key={record.id}>
+            <span className={`activity-icon ${['tone-green', 'tone-water', 'tone-gold', 'tone-violet'][index % 4]}`}><Activity size={16} /></span>
+            <div className="activity-copy">
+              <b>{record.title}</b>
+              <small>{record.payload?.description && record.payload?.description !== record.title ? record.payload.description : record.payload?.plot ?? 'Aktivitas lapangan'}</small>
+            </div>
+            <time>{record.created_at ? new Date(record.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : ''}</time>
+          </article>
+        ))}{!error && records.length === 0 && <p className="muted-cell">Belum ada aktivitas tersimpan. Catat kegiatan pertama di atas.</p>}</div>
       </section>
     </div>
   );
@@ -1078,14 +1223,69 @@ export function ReportsPage({ notify }) {
 }
 
 const settingTabs = [
+  { id: 'akun', label: 'Akun saya' },
   { id: 'profil', label: 'Profil organisasi' },
   { id: 'akses', label: 'Anggota & akses' },
   { id: 'notifikasi', label: 'Notifikasi' },
   { id: 'data', label: 'Preferensi data' },
 ];
 
+function AccountPanel({ notify }) {
+  const { session, refresh } = useDashboardData();
+  const [name, setName] = useState(session?.user?.name ?? '');
+  const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' });
+  const [busy, setBusy] = useState('');
+  const strength = passwordStrength(passwords.next, session?.user?.email);
+
+  const saveName = async () => {
+    setBusy('name');
+    try {
+      await updateProfile({ full_name: name });
+      refresh().catch(() => {});
+      notify('Profil diperbarui', 'Nama akun tersimpan.');
+    } catch (error) { notify('Profil belum tersimpan', error.message); } finally { setBusy(''); }
+  };
+
+  const savePassword = async (event) => {
+    event.preventDefault();
+    if (!strength.valid) { notify('Kata sandi belum memenuhi syarat', 'Periksa daftar syarat di bawah kolom kata sandi baru.'); return; }
+    if (passwords.next !== passwords.confirm) { notify('Konfirmasi belum sama', 'Ulangi kata sandi baru dengan benar.'); return; }
+    setBusy('password');
+    try {
+      await changePassword({ current_password: passwords.current, new_password: passwords.next });
+      setPasswords({ current: '', next: '', confirm: '' });
+      notify('Kata sandi diganti', 'Sesi di perangkat lain otomatis keluar.');
+    } catch (error) { notify('Kata sandi belum diganti', error.message); } finally { setBusy(''); }
+  };
+
+  return (
+    <>
+      <span className="eyebrow">AKUN SAYA</span>
+      <h3>Profil &amp; keamanan</h3>
+      <p>Kelola nama dan keamanan akun {session?.user?.email}.</p>
+      <div className="form-grid">
+        <label className="field field-full">Nama lengkap<input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} /></label>
+      </div>
+      <div className="settings-save"><span>Peran Anda: <b>{session?.user?.role?.replace('_', ' ')}</b></span><Button disabled={busy === 'name' || name.trim().length < 2 || name.trim() === session?.user?.name} onClick={saveName}><Check size={15} /> Simpan nama</Button></div>
+
+      <div style={{ marginTop: 24 }}><span className="eyebrow">KEAMANAN</span><h3>Ganti kata sandi</h3><p>Setelah diganti, sesi di perangkat lain akan keluar otomatis.</p></div>
+      <form className="form-grid" onSubmit={savePassword}>
+        <label className="field field-full">Kata sandi saat ini<input type="password" autoComplete="current-password" required value={passwords.current} onChange={(event) => setPasswords({ ...passwords, current: event.target.value })} /></label>
+        <label className="field">Kata sandi baru<input type="password" autoComplete="new-password" required value={passwords.next} onChange={(event) => setPasswords({ ...passwords, next: event.target.value })} /></label>
+        <label className="field">Ulangi kata sandi baru<input type="password" autoComplete="new-password" required value={passwords.confirm} onChange={(event) => setPasswords({ ...passwords, confirm: event.target.value })} /></label>
+        {passwords.next && (
+          <ul className="field field-full auth-checks" aria-label="Syarat kata sandi">
+            {passwordChecks(passwords.next, session?.user?.email).map((check) => <li key={check.id} className={check.ok ? 'is-ok' : ''}>{check.ok ? <Check size={13} /> : <X size={13} />}{check.label}</li>)}
+          </ul>
+        )}
+        <div className="field field-full"><Button type="submit" disabled={busy === 'password'}><KeyRound size={15} /> Ganti kata sandi</Button></div>
+      </form>
+    </>
+  );
+}
+
 export function SettingsPage({ notify }) {
-  const [tab, setTab] = useState('profil');
+  const [tab, setTab] = useState('akun');
   const { organization, refresh, session, summary } = useDashboardData();
   const canManage = session?.user?.role === 'administrator';
   const [profile, setProfile] = useState({});
@@ -1137,6 +1337,7 @@ export function SettingsPage({ notify }) {
         </aside>
 
         <section className="panel settings-form">
+          {tab === 'akun' && <AccountPanel notify={notify} />}
           {tab === 'profil' && (
             <>
               <span className="eyebrow">PROFIL ORGANISASI</span>
@@ -1225,7 +1426,7 @@ export const pageData = {
 
 export function ContentPage({ page, setPage, notify }) {
   switch (page) {
-    case 'peta': return <FieldMapPage />;
+    case 'peta': return <FieldMapPage notify={notify} />;
     case 'lahan': return <LandPage notify={notify} />;
     case 'siklus': return <CyclesPage notify={notify} />;
     case 'prediksi': return <PredictionPage notify={notify} />;
@@ -1241,14 +1442,36 @@ export function ContentPage({ page, setPage, notify }) {
   }
 }
 
-export function FieldMapPage() {
-  const { plots: livePlots } = useDashboardData();
+export function FieldMapPage({ notify }) {
+  const { plots: livePlots, session, refresh } = useDashboardData();
+  const canManage = ['administrator', 'manajer_lapangan'].includes(session?.user?.role);
   const [mapFeatures, setMapFeatures] = useState([]);
   const [mapError, setMapError] = useState('');
   const [selectedId, setSelectedId] = useState(livePlots[0]?.id ?? null);
   const [detailPlotId, setDetailPlotId] = useState(null);
   const [query, setQuery] = useState('');
   const [zoom, setZoom] = useState(1);
+  const [googleReady, setGoogleReady] = useState(false);
+  const [googleFailed, setGoogleFailed] = useState(false);
+  const bigMapRef = useRef(null);
+  const livePlotsRef = useRef(livePlots);
+  livePlotsRef.current = livePlots;
+
+  const googleMapsEnabled = isGoogleMapsConfigured();
+
+  useEffect(() => {
+    if (!googleMapsEnabled || googleReady || googleFailed) return undefined;
+    let active = true;
+    loadGoogleMaps().then(() => {
+      if (active) setGoogleReady(true);
+    }).catch((cause) => {
+      if (active) {
+        setGoogleFailed(true);
+        setMapError(cause.message);
+      }
+    });
+    return () => { active = false; };
+  }, [googleMapsEnabled, googleReady, googleFailed]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1293,6 +1516,52 @@ export function FieldMapPage() {
     }).join(' '));
   }, [mapFeatures]);
 
+  /** Render peta dasar Google Maps dengan batas petak GeoJSON. */
+  useEffect(() => {
+    if (!googleReady || !bigMapRef.current) return undefined;
+    const maps = window.google.maps;
+    const map = new maps.Map(bigMapRef.current, {
+      center: { lat: -2.6, lng: 118 },
+      zoom: 5,
+      mapTypeId: 'hybrid',
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      clickableIcons: false,
+    });
+    if (mapFeatures.length > 0) {
+      map.data.addGeoJson({ type: 'FeatureCollection', features: mapFeatures });
+    }
+    const plotPalette = {
+      aktif: { fill: '#8fc59b', stroke: '#d6e4a1' },
+      selesai: { fill: '#d6e4a1', stroke: '#f4efd9' },
+      persiapan: { fill: '#a97d3c', stroke: '#f1dfa2' },
+      rusak: { fill: '#b55e4f', stroke: '#f9eae6' },
+      ditutup: { fill: '#8b9c90', stroke: '#e3dfce' },
+    };
+    map.data.setStyle((feature) => {
+      const status = String(feature.getProperty('status') ?? 'aktif').toLowerCase();
+      const palette = plotPalette[status] ?? plotPalette.aktif;
+      return {
+        fillColor: palette.fill,
+        fillOpacity: 0.3,
+        strokeColor: palette.stroke,
+        strokeWeight: 2,
+        cursor: 'pointer',
+      };
+    });
+    map.data.addListener('click', (event) => {
+      const plotId = event.feature.getProperty('id');
+      if (plotId === undefined || plotId === null) return;
+      const match = livePlotsRef.current.find((plot) => String(plot.plot_id) === String(plotId));
+      if (match) setSelectedId(match.id);
+    });
+    const bounds = new maps.LatLngBounds();
+    map.data.forEach((entry) => entry.getGeometry().forEachLatLng((latLng) => bounds.extend(latLng)));
+    if (!bounds.isEmpty()) map.fitBounds(bounds, 64);
+    return undefined;
+  }, [googleReady, mapFeatures]);
+
   return (
     <div className="page-stack">
       <PageHead
@@ -1312,20 +1581,24 @@ export function FieldMapPage() {
         <section className="panel big-map-panel">
           <div className="big-map-toolbar">
             <SearchField value={query} onChange={setQuery} placeholder="Cari desa atau petak..." />
-            <span className="chip">EPSG:4326</span>
+            {googleMapsEnabled && !googleFailed
+              ? <span className="chip chip-good">Google Maps aktif</span>
+              : <span className="chip">Mode skema GeoJSON · kunci Google Maps belum diatur</span>}
           </div>
           <div className="big-map">
-            <div className="map-canvas-inner" style={{ transform: `scale(${zoom})` }}>
+            <div className="map-canvas-inner" style={{ transform: `scale(${zoom})`, display: googleMapsEnabled && googleReady ? 'none' : undefined }}>
               <svg viewBox="0 0 1000 540" preserveAspectRatio="none" className="plot-svg" aria-label="Batas lahan dari GeoJSON">
                 {mapPaths.map((points, index) => <polygon key={`${mapFeatures[index]?.properties?.id ?? index}`} points={points} className={`plot plot-${['a', 'b', 'c', 'd'][index % 4]}`} />)}
               </svg>
             </div>
-            {mapPaths.length === 0 && <div className="map-empty">{mapError || 'Belum ada petak dengan batas GeoJSON. Petak tanpa koordinat tetap ada di daftar.'}</div>}
-            <div className="map-zoom">
+            {googleMapsEnabled && !googleReady && !googleFailed && <div className="map-empty">Memuat Google Maps…</div>}
+            {(googleFailed || !googleMapsEnabled) && mapPaths.length === 0 && <div className="map-empty">{mapError || 'Belum ada petak dengan batas GeoJSON. Petak tanpa koordinat tetap ada di daftar.'}</div>}
+            {googleMapsEnabled && !googleFailed && <div className="google-canvas" ref={bigMapRef} />}
+            {!googleReady && <div className="map-zoom">
               <button type="button" onClick={() => setZoom((value) => Math.min(1.6, value + 0.15))} aria-label="Perbesar peta">+</button>
               <button type="button" onClick={() => setZoom((value) => Math.max(0.8, value - 0.15))} aria-label="Perkecil peta">−</button>
               <button type="button" onClick={() => setZoom(1)} aria-label="Atur ulang peta">⟲</button>
-            </div>
+            </div>}
             <div className="map-legend large">
               <b>KETERANGAN</b>
               <span><i />Sehat</span>
@@ -1333,7 +1606,7 @@ export function FieldMapPage() {
               <span><i className="blue" />Siklus aktif</span>
               <span><i className="gold" />Mendekati panen</span>
             </div>
-            <span className="map-attribution">Sumber: batas petak organisasi · EPSG:4326</span>
+            <span className="map-attribution">{googleReady ? 'Sumber: Google Maps · batas petak data organisasi (EPSG:4326)' : 'Sumber: batas petak organisasi · EPSG:4326'}</span>
           </div>
         </section>
 
@@ -1362,7 +1635,7 @@ export function FieldMapPage() {
           </div>
         </aside>
       </div>
-      <PlotDetailModal plotId={detailPlotId} onClose={() => setDetailPlotId(null)} />
+      <PlotDetailModal plotId={detailPlotId} onClose={() => setDetailPlotId(null)} canManage={canManage} notify={notify} onChanged={() => refresh().catch((error) => notify('Daftar belum diperbarui', error.message))} />
     </div>
   );
 }

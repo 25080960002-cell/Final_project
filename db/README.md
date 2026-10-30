@@ -48,6 +48,6 @@ Katalog sebaiknya dimuat sebelum sampel seed jika menggunakan file SQL; `000_ref
 
 ## Deploy Docker
 
-`docker-compose.yml` memasang migrasi dan katalog referensi ke `/docker-entrypoint-initdb.d`. MySQL menjalankannya sekali saat volume `mapan-db` pertama dibuat. Data pengguna baru dibuat melalui `npm run provision-admin`; seed demo tidak dijalankan pada deployment produksi. Untuk Railway/Render, jalankan `npm run migrate` dari mesin lokal dengan kredensial database produksi (lihat `docs/DEPLOY.md`).
+`docker-compose.yml` memasang migrasi dan katalog referensi ke `/docker-entrypoint-initdb.d`. MySQL menjalankannya sekali saat volume `mapan-db` pertama dibuat. Data pengguna baru dibuat melalui `npm run provision-admin`; seed demo tidak dijalankan pada deployment produksi. Untuk Railway/Render, jalankan `npm run migrate` dari mesin lokal dengan kredensial database produksi (lihat `docs/PANDUAN-DEPLOY.md`).
 
 Untuk database yang sudah terisi, buat backup terlebih dahulu, periksa tabel/kolom yang ada, lalu jalankan hanya migrasi yang belum diterapkan sesuai urutan. Jalankan katalog referensi bila tabel `commodities` belum berisi data yang diperlukan. Jangan menghapus volume database/media untuk memperbaiki migrasi.

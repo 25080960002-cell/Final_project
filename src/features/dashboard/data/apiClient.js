@@ -90,6 +90,51 @@ export async function login(credentials) {
   return response.data;
 }
 
+export async function register(details) {
+  const response = await requestJson('/api/auth/register', 'POST', details);
+  if (response.data?.organization_id) setActiveOrganizationId(response.data.organization_id);
+  return response.data;
+}
+
+export async function changePassword(details) {
+  const response = await requestJson('/api/account/change-password', 'POST', details);
+  return response.data;
+}
+
+export async function updateProfile(changes) {
+  const response = await requestJson('/api/account/profile', 'PATCH', changes);
+  return response.data;
+}
+
+export const ACCOUNT_AVATAR_URL = '/api/account/avatar';
+
+/** Foto profil milik akun; tidak terikat organisasi, wajib sesi aktif. */
+export function accountAvatarUrl(session, bust = '') {
+  const path = session?.user?.avatar_url;
+  if (!path) return '';
+  return `${API_BASE}${path}${bust ? `?v=${bust}` : ''}`;
+}
+
+export async function uploadAvatar(file) {
+  if (!file.type.startsWith('image/')) throw new Error('Pilih berkas JPEG, PNG, atau WEBP.');
+  const response = await fetch(`${API_BASE}${ACCOUNT_AVATAR_URL}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error?.message ?? 'Foto profil belum tersimpan.');
+  return body.data;
+}
+
+export async function removeAvatar() {
+  const response = await fetch(`${API_BASE}${ACCOUNT_AVATAR_URL}`, { method: 'DELETE', credentials: 'include' });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error?.message ?? 'Foto profil belum terhapus.');
+  return body.data;
+}
+
 export async function googleAuthenticate(details) {
   const response = await requestJson('/api/auth/google', 'POST', details);
   if (response.data?.organization_id) setActiveOrganizationId(response.data.organization_id);
@@ -215,6 +260,16 @@ export async function updateRecord(type, id, changes) {
 
 export async function removeRecord(type, id) {
   return requestJson(orgPath(`/records/${encodeURIComponent(type)}/${encodeURIComponent(id)}`), 'DELETE');
+}
+
+export async function updatePlot(plotId, changes) {
+  const response = await requestJson(orgPath(`/plots/${plotId}`), 'PATCH', changes);
+  return response.data;
+}
+
+export async function deletePlot(plotId) {
+  const response = await requestJson(orgPath(`/plots/${plotId}`), 'DELETE');
+  return response.data;
 }
 
 export async function createPlot(plot) {

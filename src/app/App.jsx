@@ -20,6 +20,7 @@ function viewForHash(hash) {
   if (hash.startsWith('undangan/')) return 'auth';
   if (hash === 'masuk' || hash === 'daftar') return 'auth';
   if (hash === 'dashboard') return 'dashboard';
+  if (hash === 'demo') return 'demo';
   if (hash === 'top' || hash === 'fitur' || hash === 'faq' || hash === 'kontak') return 'landing';
   if (hash === 'tentang' || hash.startsWith('tentang-')) return 'about';
   return 'landing';
@@ -64,7 +65,7 @@ export default function App() {
   // yet. Scroll once after the first render.
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '');
-    if (!hash || hash === 'dashboard' || hash === 'top' || hash === 'tentang') {
+    if (!hash || hash === 'dashboard' || hash === 'demo' || hash === 'top' || hash === 'tentang') {
       return undefined;
     }
 
@@ -94,7 +95,7 @@ export default function App() {
 
     const hash = window.location.hash;
 
-    if (!hash || view === 'dashboard' || hash === '#tentang' || hash === '#top') {
+    if (!hash || view === 'dashboard' || view === 'demo' || hash === '#tentang' || hash === '#top') {
       window.scrollTo({ top: 0, behavior: 'instant' });
       return undefined;
     }
@@ -122,7 +123,8 @@ export default function App() {
   const openDashboard = () => navigate('dashboard');
   const openLogin = () => navigate('masuk');
   const openDashboardEntry = () => navigate('masuk');
-  const openDemo = () => navigate('dashboard');
+  const openDemo = () => navigate('demo');
+  const openRegister = () => navigate('daftar');
   const openLanding = () => navigate('top');
   const openAbout = (hash = 'tentang') => navigate(hash);
   if (view === 'auth') {
@@ -134,13 +136,15 @@ export default function App() {
       </Suspense>
     );
   }
-  if (view === 'dashboard') {
+  if (view === 'dashboard' || view === 'demo') {
     return (
       <Suspense fallback={pageFallback}>
-        <DashboardDataProvider>
+        <DashboardDataProvider key={view} demo={view === 'demo'}>
           <Dashboard
+            demo={view === 'demo'}
             onHome={openLanding}
             onLogin={openLogin}
+            onRegister={openRegister}
             theme={theme}
             onToggleTheme={toggleTheme}
           />
@@ -166,6 +170,7 @@ export default function App() {
     <LandingPage
       onEnter={openLogin}
       onDashboardEntry={openDashboardEntry}
+      onRegister={openRegister}
       onSignup={openDemo}
       onAbout={openAbout}
       theme={theme}

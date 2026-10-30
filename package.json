@@ -9,7 +9,18 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "setup": "npm ci && npm --prefix server ci",
+    "dev:api": "npm --prefix server run dev",
+    "dev:all": "node scripts/dev-all.mjs",
+    "db:migrate": "npm --prefix server run migrate",
+    "db:status": "npm --prefix server run migrate -- --status",
+    "db:check": "npm --prefix server run check-db",
+    "check": "npm run build && node scripts/check-syntax.mjs",
+    "test:web": "node --test \"src/**/*.test.js\"",
+    "test:api": "npm --prefix server test",
+    "test": "npm run test:web && npm run test:smoke && npm run test:api",
+    "test:smoke": "node scripts/smoke-render.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.3.1",

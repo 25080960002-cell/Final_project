@@ -11,10 +11,12 @@ import {
   Search,
   Settings,
   Sun,
+  UserRound,
   X,
 } from 'lucide-react';
 import { Avatar, Brand, IconButton, Status } from '../../../shared/ui';
 import { nav } from '../data/dashboard';
+import { accountAvatarUrl } from '../data/apiClient';
 import { useDashboardData } from '../data/DashboardDataContext';
 
 function timeAgo(iso) {
@@ -103,7 +105,7 @@ export function Sidebar({ active, setActive, mobileOpen, setMobileOpen, onHome, 
             <span>Kembali ke halaman awal</span>
           </button>
           <div className="side-user">
-            <Avatar name={session?.user?.name ?? 'Demo MAPAN'} size="sm" />
+            <Avatar name={session?.user?.name ?? 'Demo MAPAN'} size="sm" src={accountAvatarUrl(session)} />
             <span><b>{session?.user?.name ?? 'Demo MAPAN'}</b><small>{session?.user?.role ?? 'Data contoh'}</small></span>
           </div>
         </div>
@@ -121,6 +123,7 @@ export function Topbar({
   onNotices,
   profileOpen,
   onProfile,
+  onProfileEdit,
   onHome,
   onLogin,
   onSettings,
@@ -128,6 +131,7 @@ export function Topbar({
     onLogout,
     hasNotices,
 }) {
+  const avatarSrc = accountAvatarUrl(session);
   return (
     <header className="topbar">
       <div className="topbar-heading">
@@ -164,7 +168,7 @@ export function Topbar({
           onClick={onProfile}
           aria-expanded={profileOpen}
         >
-            <Avatar name={session?.user?.name ?? 'Demo MAPAN'} size="sm" />
+            <Avatar name={session?.user?.name ?? 'Demo MAPAN'} size="sm" src={avatarSrc} />
             <span><b>{session?.user?.name ?? 'Demo MAPAN'}</b><small>{session?.user?.role ?? 'Data contoh'}</small></span>
           <ChevronDown size={14} />
         </button>
@@ -173,10 +177,11 @@ export function Topbar({
       {profileOpen && (
         <div className="profile-popover">
           <div className="profile-popover-head">
-              <Avatar name={session?.user?.name ?? 'Demo MAPAN'} size="md" />
+              <Avatar name={session?.user?.name ?? 'Demo MAPAN'} size="md" src={avatarSrc} />
               <span><b>{session?.user?.name ?? 'Demo MAPAN'}</b><small>{session?.user?.email ?? 'Mode data contoh'}</small></span>
             <Status>Aktif</Status>
           </div>
+          {session && <button type="button" onClick={onProfileEdit}><UserRound size={15} /> Ubah profil & foto</button>}
           <button type="button" onClick={onSettings}><Settings size={15} /> Pengaturan akun</button>
             {session
               ? <button type="button" onClick={onLogout}><LogOut size={15} /> Keluar dari dashboard</button>

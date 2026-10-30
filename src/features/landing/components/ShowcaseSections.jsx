@@ -240,7 +240,7 @@ export function Testimonials() {
   );
 }
 
-export function LandingCta({ onEnter, onSignup }) {
+export function LandingCta({ onEnter, onRegister, onSignup }) {
   return (
     <section className="cta-section">
       <div className="container">
@@ -248,9 +248,9 @@ export function LandingCta({ onEnter, onSignup }) {
           <div className="cta-copy">
             <span className="eyebrow eyebrow-light"><Sparkles size={14} /> MULAI DARI LAHAN PERTAMA</span>
             <h2>Siap membuat catatan pertanian<br /><em>lebih teratur?</em></h2>
-            <p>Masuk untuk mengelola data organisasi, atau lihat dashboard demo tanpa akun.</p>
+            <p>Buat akun untuk mengelola data organisasi Anda, atau coba dashboard demo tanpa akun.</p>
             <div className="cta-actions">
-              <Button variant="cream" size="lg" onClick={onEnter}>Masuk ke Dashboard <ArrowRight size={17} /></Button>
+              <Button variant="cream" size="lg" onClick={onRegister ?? onEnter}>Buat akun organisasi <ArrowRight size={17} /></Button>
               <Button variant="dark-ghost" size="lg" onClick={onSignup}>Lihat demo <ArrowRight size={17} /></Button>
             </div>
           </div>

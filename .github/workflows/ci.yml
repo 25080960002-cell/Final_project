@@ -7,7 +7,7 @@ on:
 
 jobs:
   web:
-    name: Frontend build
+    name: Frontend (build, unit, smoke render)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,10 +17,31 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run test:web
+      - run: npm run test:smoke
 
   api:
-    name: Backend syntax check
+    name: Backend (sintaks + uji integrasi MySQL)
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_USER: mapan
+          MYSQL_PASSWORD: mapan_ci_pass
+          MYSQL_DATABASE: mapan
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: mapan
+      DB_PASSWORD: mapan_ci_pass
+      DB_NAME: mapan
+      TEST_DB_NAME: mapan_test
     defaults:
       run:
         working-directory: server
@@ -32,8 +53,9 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
-      - name: Check every source file
+      - name: Cek sintaks
         run: |
-          for file in $(find src scripts -name '*.js'); do
-            node --check "$file"
-          done
+          for f in $(find src scripts test -name '*.js'); do node --check "$f"; done
+      - name: Beri hak database uji
+        run: mysql -h127.0.0.1 -uroot -proot -e "GRANT ALL ON \`mapan_test\`.* TO 'mapan'@'%'; FLUSH PRIVILEGES;"
+      - run: npm test

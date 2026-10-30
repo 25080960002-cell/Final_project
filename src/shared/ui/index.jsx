@@ -47,7 +47,8 @@ export function Status({ children, tone }) {
   return <span className={`status status-${resolved}`}><i />{children}</span>;
 }
 
-export function Avatar({ name = '', size = 'md', tone = 'green' }) {
+export function Avatar({ name = '', size = 'md', tone = 'green', src = '' }) {
+  const className = `avatar avatar-${size} avatar-${tone}`;
   const initials = name
     .split(' ')
     .filter(Boolean)
@@ -55,7 +56,10 @@ export function Avatar({ name = '', size = 'md', tone = 'green' }) {
     .map((part) => part[0])
     .join('')
     .toUpperCase();
-  return <span className={`avatar avatar-${size} avatar-${tone}`}>{initials || '?'}</span>;
+  if (src) {
+    return <span className={`${className} avatar-photo`}><img src={src} alt={name || 'Foto profil'} /></span>;
+  }
+  return <span className={className}>{initials || '?'}</span>;
 }
 
 export function Progress({ value = 0, tone = 'green', label }) {

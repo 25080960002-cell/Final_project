@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { Sidebar, Topbar } from './components/DashboardLayout';
+import ProfileModal from './components/ProfileModal';
 import { ContentPage, pageData } from './pages/DashboardPages';
 import { nav } from './data/dashboard';
 import { fetchRecords } from './data/apiClient';
@@ -45,19 +46,24 @@ const quickActions = [
   { id: 'laporan', label: 'Buat laporan bulanan', icon: FileBarChart2, hint: 'Data & dokumentasi' },
 ];
 
-export default function Dashboard({ onHome, onLogin, theme, onToggleTheme }) {
-  const { status, source, error, session, signOut, refresh } = useDashboardData();
+export default function Dashboard({ demo = false, onHome, onLogin, onRegister, theme, onToggleTheme }) {
+  const { status, source, error, session, signOut, refresh, reload } = useDashboardData();
   const [page, setPage] = useState('dashboard');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [toasts, setToasts] = useState([]);
   const [readNotices, setReadNotices] = useState(false);
   const [notices, setNotices] = useState([]);
 
   const [title, subtitle] = pageData[page] || pageData.dashboard;
+
+  useEffect(() => {
+    if (!demo && status === 'unauth') onLogin?.();
+  }, [demo, status, onLogin]);
 
   const notify = (toastTitle, description) => {
     const id = `${Date.now()}-${Math.random()}`;
@@ -140,6 +146,7 @@ export default function Dashboard({ onHome, onLogin, theme, onToggleTheme }) {
           onNotices={() => { setNoticeOpen((open) => !open); setProfileOpen(false); setReadNotices(true); }}
           profileOpen={profileOpen}
           onProfile={() => { setProfileOpen((open) => !open); setNoticeOpen(false); }}
+          onProfileEdit={() => { setProfileOpen(false); setProfileEditOpen(true); }}
           onHome={onHome}
           onLogin={onLogin}
           onSettings={() => openPage('pengaturan')}
@@ -149,15 +156,34 @@ export default function Dashboard({ onHome, onLogin, theme, onToggleTheme }) {
         />
 
         <main className="dash-content">
-          {(source !== 'api' || error) && (
+          {demo && (
             <section className="dashboard-demo-banner" role="status">
-              <div><b>{status === 'loading' ? 'Menghubungkan ke data organisasi…' : error ? 'Sinkronisasi data terganggu' : 'Anda sedang melihat dashboard demo'}</b><span>{error ? `Data terakhir tetap tersedia. ${error}` : 'Data contoh tidak tersimpan. Masuk untuk membuka dan mengelola data organisasi Anda.'}</span></div>
-              {session
-                ? <button type="button" onClick={async () => { try { await refresh(); } catch (cause) { notify('Sinkronisasi gagal', cause.message); } }}>Coba sinkronkan lagi <ArrowRight size={15} /></button>
-                : onLogin && <button type="button" onClick={onLogin}>Masuk ke data organisasi <ArrowRight size={15} /></button>}
+              <div><b>Mode demo · data contoh</b><span>Ini hanya gambaran tampilan. Data contoh tidak tersimpan dan bukan data organisasi sungguhan.</span></div>
+              <div className="demo-banner-actions">
+                {onRegister && <button type="button" onClick={onRegister}>Buat akun saya <ArrowRight size={15} /></button>}
+                {onLogin && <button type="button" onClick={onLogin}>Masuk</button>}
+              </div>
             </section>
           )}
-          <ContentPage page={page} setPage={openPage} notify={notify} />
+          {!demo && status === 'error' && (
+            <section className="dashboard-demo-banner" role="alert">
+              <div><b>Data organisasi belum bisa dimuat</b><span>{error || 'Periksa koneksi internet lalu coba lagi.'}</span></div>
+              <button type="button" onClick={reload}>Coba lagi <ArrowRight size={15} /></button>
+            </section>
+          )}
+          {!demo && status === 'ready' && error && (
+            <section className="dashboard-demo-banner" role="status">
+              <div><b>Sinkronisasi data terganggu</b><span>Data terakhir tetap tersedia. {error}</span></div>
+              <button type="button" onClick={async () => { try { await refresh(); } catch (cause) { notify('Sinkronisasi gagal', cause.message); } }}>Coba sinkronkan lagi <ArrowRight size={15} /></button>
+            </section>
+          )}
+          {!demo && (status === 'loading' || status === 'unauth') ? (
+            <p className="muted-cell" role="status" style={{ padding: '48px 0', textAlign: 'center' }}>
+              {status === 'unauth' ? 'Mengalihkan ke halaman masuk…' : 'Memuat data organisasi…'}
+            </p>
+          ) : !demo && status === 'error' ? null : (
+            <ContentPage page={page} setPage={openPage} notify={notify} />
+          )}
         </main>
 
         <footer className="dash-foot">
@@ -165,6 +191,14 @@ export default function Dashboard({ onHome, onLogin, theme, onToggleTheme }) {
           <span>MAPAN v1.0 · dibuat untuk pertanian Indonesia</span>
         </footer>
       </div>
+
+      <ProfileModal
+        open={profileEditOpen}
+        onClose={() => setProfileEditOpen(false)}
+        session={session}
+        notify={notify}
+        onSaved={reload}
+      />
 
       {(noticeOpen || profileOpen) && (
         <button type="button" className="popover-scrim" aria-label="Tutup panel" onClick={() => { setNoticeOpen(false); setProfileOpen(false); }} />

@@ -44,7 +44,7 @@ const dataSources = [
   },
 ];
 
-export default function LandingFooter({ onEnter, onSignup, theme = 'light', onThemeToggle }) {
+export default function LandingFooter({ onEnter, onRegister, onSignup, theme = 'light', onThemeToggle }) {
   return (
     <footer className="footer" id="kontak">
       <div className="container">
@@ -93,7 +93,8 @@ export default function LandingFooter({ onEnter, onSignup, theme = 'light', onTh
                 {theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
               </button>
             </div>
-            <button type="button" className="footer-enter" onClick={onEnter}>Buka Dashboard <ArrowRight size={14} /></button>
+            <button type="button" className="footer-enter" onClick={onEnter}>Masuk <ArrowRight size={14} /></button>
+            <button type="button" className="footer-enter" onClick={onRegister ?? onEnter}>Buat akun <ArrowRight size={14} /></button>
             <button type="button" className="footer-enter" onClick={onSignup}>Lihat demo <ArrowRight size={14} /></button>
           </div>
         </div>

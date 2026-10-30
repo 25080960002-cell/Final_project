@@ -9,6 +9,8 @@ import { plotRouter } from './routes/plots.js';
 import { referenceRouter } from './routes/reference.js';
 import { recordRouter } from './routes/records.js';
 import { authRouter } from './routes/auth.js';
+import { accountRouter, publicAccountRouter } from './routes/account.js';
+import { createRateLimiter } from './rateLimit.js';
 import { weatherRouter } from './routes/weather.js';
 import { predictionRouter } from './routes/predictions.js';
 import { mediaRouter } from './routes/media.js';
@@ -69,6 +71,10 @@ export function createApp() {
     });
     next();
   });
+  app.use('/api', createRateLimiter({
+    windowMs: 5 * 60 * 1000, max: 900, code: 'TERLALU_BANYAK_PERMINTAAN',
+    message: 'Terlalu banyak permintaan dari jaringan ini. Coba lagi beberapa menit lagi.',
+  }));
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/', (req, res) => {
@@ -91,11 +97,14 @@ export function createApp() {
           'GET /api/health',
           'POST /api/auth/invitation-info',
           'POST /api/auth/accept-invitation',
+          'POST /api/auth/register',
           'POST /api/auth/login',
           'POST /api/auth/google',
           'GET /api/auth/google-config',
           'GET /api/auth/session',
           'POST /api/auth/logout',
+          'PATCH /api/account/profile',
+          'POST /api/account/change-password',
           'GET /api/organizations',
           'GET /api/organizations/:orgId',
           'PATCH /api/organizations/:orgId',
@@ -104,6 +113,8 @@ export function createApp() {
           'GET /api/organizations/:orgId/plots',
           'POST /api/organizations/:orgId/plots',
           'GET /api/organizations/:orgId/plots/:plotId',
+          'PATCH /api/organizations/:orgId/plots/:plotId',
+          'DELETE /api/organizations/:orgId/plots/:plotId',
           'GET /api/organizations/:orgId/map/plots',
           'GET /api/organizations/:orgId/farm-groups',
           'GET /api/organizations/:orgId/members',
@@ -128,7 +139,8 @@ export function createApp() {
     });
   });
 
-  app.use('/api', healthRouter, referenceRouter, authRouter);
+  app.use('/api', healthRouter, referenceRouter, authRouter, publicAccountRouter);
+  app.use('/api', accountRouter);
   app.use('/api', requireAuth);
   app.use('/api/organizations/:orgId', requireTenant);
   app.use('/api/organizations/:orgId', requireExtensionReadAccess);

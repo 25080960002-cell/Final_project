@@ -6,6 +6,7 @@ import { config } from '../config.js';
 import { query } from '../db.js';
 import { HttpError, asyncHandler, parseId } from '../http.js';
 import { loadOrganization } from '../services/organization.js';
+import { requireRoles } from '../auth.js';
 
 export const mediaRouter = Router();
 const mediaTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -17,6 +18,7 @@ const signatureMatches = (buffer, type) => {
 
 mediaRouter.post(
   '/organizations/:orgId/media',
+  requireRoles('administrator', 'manajer_lapangan', 'petani'),
   express.raw({ type: [...mediaTypes], limit: '10mb' }),
   asyncHandler(async (req, res) => {
     const orgId = parseId(req.params.orgId, 'organization id');

@@ -20,7 +20,7 @@ validasi dan pengujian. Output: source code, database, dokumentasi pengembangan 
 | 4. Eksekusi DDL Fase 3+ | Dashboard records, sesi auth, media, identitas Google, refine (index & kolom terstruktur) | `db/migrations/003–007` | ✅ Selesai (total 7 migrasi berurutan & idempotent) |
 | 5. Backend API | Express 5 + MySQL: auth sesi cookie HttpOnly, organizations, plots, records (cycle/task/activity/report/scan/community_post), media, cuaca Open-Meteo, prediksi benchmark | `server/src/routes/*`, `server/src/services/*` | ✅ Berfungsi; ⚠️ sebagian fitur belum penuh |
 | 6. Frontend (prototype→web) | React 19 + Vite 8: landing page, Tentang + data BPS, auth masuk/undangan, dashboard 12 menu, tema terang/gelap | `src/` | ✅ Berfungsi; ⚠️ sebagian dashboard masih data demo |
-| 7. Deployment | Vercel (frontend) + Railway/Render (API) + VPS docker-compose (web+api+mysql) | `vercel.json`, `Dockerfile`, `docker-compose.yml`, `docs/DEPLOY.md` | ⚠️ Siap, perlu verifikasi live |
+| 7. Deployment | Vercel (frontend) + Railway/Render (API) + VPS docker-compose (web+api+mysql) | `vercel.json`, `Dockerfile`, `docker-compose.yml`, `docs/PANDUAN-DEPLOY.md` | ⚠️ Siap, perlu verifikasi live |
 | 8. Pengujian | CI build frontend + cek sintaks backend; uji constraint DB | `.github/workflows/ci.yml` | ❌ Paling lemah — perlu ekspansi besar |
 | 9. Dokumentasi laporan akhir | Dokumentasi pengembangan + hasil pengujian + link demo YouTube | Laporan PDF | ❌ Belum dibuat |
 | 10. Demo video | Rekaman demo aplikasi | YouTube | ❌ Belum dibuat |

@@ -59,7 +59,7 @@ function CountUp({ value, suffix = '', duration = 1100 }) {
   return <span ref={nodeRef}>{current}{suffix}</span>;
 }
 
-export default function LandingHero({ onEnter, onSignup, onAbout }) {
+export default function LandingHero({ onEnter, onRegister, onSignup, onAbout }) {
   const heroRef = useRef(null);
   const bgRef = useRef(null);
 
@@ -110,11 +110,11 @@ export default function LandingHero({ onEnter, onSignup, onAbout }) {
           bersama tim dalam satu ruang kerja yang rapi dan mudah dipakai.
         </p>
         <div className="hero-actions" data-reveal style={{ '--reveal-delay': '260ms' }}>
-          <Button size="lg" onClick={onEnter}>Masuk ke Dashboard <ArrowRight size={17} /></Button>
+          <a href="#daftar" className="btn btn-primary btn-lg">Buat akun organisasi <ArrowRight size={17} /></a>
           <Button variant="dark-ghost" size="lg" onClick={onSignup}>Lihat demo dashboard <ArrowRight size={17} /></Button>
         </div>
         <span className="hero-note" data-reveal style={{ '--reveal-delay': '330ms' }}>
-          <span className="live-dot" /> Data organisasi tersedia setelah masuk. Coba dashboard demo tanpa akun.
+          <span className="live-dot" /> Sudah punya akun? <button type="button" className="text-link" onClick={onEnter}>Masuk</button> · Atau jelajahi dashboard demo tanpa akun.
         </span>
       </div>
 

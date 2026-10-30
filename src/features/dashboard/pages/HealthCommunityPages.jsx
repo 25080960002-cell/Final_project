@@ -158,7 +158,7 @@ export function PlantHealthPage() {
             </select>
           </label>
           <label className="field">Lahan terkait
-            <select disabled={readOnly} value={plotId} onChange={(event) => setPlotId(event.target.value)}><option value="">Tidak dipilih</option>{plots.map((plot) => <option key={plot.plot_id} value={plot.plot_id}>{plot.name}</option>)}</select>
+            <select disabled={readOnly} value={plotId} onChange={(event) => setPlotId(event.target.value)}><option value="">Tidak dipilih</option>{plots.map((plot) => <option key={plot.plot_id ?? plot.id} value={plot.plot_id ?? plot.id}>{plot.name}</option>)}</select>
           </label>
 
           <fieldset className="symptom-field">
@@ -220,6 +220,8 @@ function formatFileSize(bytes) {
 }
 
 const communityFilters = ['Semua', 'Tanya budidaya', 'Berbagi pengalaman', 'Panen & pasar'];
+const categoryTones = { 'Tanya budidaya': 'question', 'Berbagi pengalaman': 'experience', 'Panen & pasar': 'harvest' };
+const categoryTone = (category) => categoryTones[category] ?? 'question';
 
 export function CommunityPage({ notify }) {
   const { session, organization, summary } = useDashboardData();
@@ -503,11 +505,11 @@ export function CommunityPage({ notify }) {
           {filteredPosts.map((post) => (
             <article className="panel community-post" key={post.id}>
               <div className="post-author">
-                <Avatar name={post.author} size="md" />
+                <Avatar name={post.author} size="lg" />
                 <div><b>{post.author}</b><span>{post.group} · {post.location}</span></div>
                 <time>{post.time}</time>
               </div>
-              <span className="chip post-category">{post.category}</span>
+              <span className={`chip post-category tone-${categoryTone(post.category)}`}>{post.category}</span>
               <h3>{post.title}</h3>
               <p>{post.body}</p>
               {post.photoUrl && (
@@ -522,7 +524,17 @@ export function CommunityPage({ notify }) {
               </div>
               {openComments.includes(post.id) && (
                 <div className="post-comments">
-                  {post.comments.map((comment, index) => <p key={`${post.id}-${index}`}>{comment}</p>)}
+                  {post.comments.map((comment, index) => {
+                    const separator = comment.indexOf(': ');
+                    const commentAuthor = separator > 0 ? comment.slice(0, separator) : 'Anggota';
+                    const commentText = separator > 0 ? comment.slice(separator + 2) : comment;
+                    return (
+                      <p key={`${post.id}-${index}`}>
+                        <span className="comment-avatar"><Avatar name={commentAuthor} size="sm" /></span>
+                        <span><b>{commentAuthor}</b> {commentText}</span>
+                      </p>
+                    );
+                  })}
                   <form onSubmit={(event) => addComment(event, post.id)}>
                     <input disabled={!canWrite} aria-label={`Tanggapi diskusi ${post.title}`} value={commentDrafts[post.id] || ''} onChange={(event) => setCommentDrafts((current) => ({ ...current, [post.id]: event.target.value }))} placeholder={canWrite ? 'Tulis tanggapan...' : 'Akses baca saja'} maxLength={300} />
                     <button type="submit" disabled={!canWrite} aria-label="Kirim tanggapan"><Send size={15} /></button>

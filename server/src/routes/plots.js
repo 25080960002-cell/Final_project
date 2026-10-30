@@ -95,9 +95,10 @@ plotRouter.post(
         [plotId, farmerId],
       );
       await connection.execute(
-        `INSERT INTO organization_records (organization_id, record_type, title, payload)
-         VALUES (?, 'cycle', ?, ?)`,
-        [orgId, crop, JSON.stringify({ crop, plot: name, plot_id: plotId, area: `${areaHa} ha`, phase: 'Persiapan', progress: 4, status: 'Sehat', harvest: 'Belum dijadwalkan' })],
+        `INSERT INTO organization_records
+           (organization_id, author_user_id, plot_id, record_type, title, phase, progress, payload)
+         VALUES (?, ?, ?, 'cycle', ?, 'Persiapan', 4, ?)`,
+        [orgId, req.auth.user_id, plotId, crop, JSON.stringify({ crop, plot: name, plot_id: plotId, area: `${areaHa} ha`, phase: 'Persiapan', progress: 4, status: 'Sehat', harvest: 'Belum dijadwalkan' })],
       );
       await connection.commit();
     } catch (error) {
@@ -109,6 +110,80 @@ plotRouter.post(
 
     const rows = await query(`${PLOT_SELECT} WHERE p.organization_id = ? AND p.id = ?`, [orgId, plotId]);
     res.status(201).json({ data: serializePlot(rows[0]), meta: { organization_id: orgId } });
+  }),
+);
+
+const IRRIGATION_TYPES = ['irigasi_teknis', 'tadah_hujan', 'lebak', 'lainnya'];
+
+plotRouter.patch(
+  '/organizations/:orgId/plots/:plotId',
+  requireRoles('administrator', 'manajer_lapangan'),
+  asyncHandler(async (req, res) => {
+    const orgId = parseId(req.params.orgId, 'organization id');
+    const plotId = parseId(req.params.plotId, 'plot id');
+    const body = req.body ?? {};
+    const sets = [];
+    const params = [];
+
+    if (body.name !== undefined) {
+      const name = typeof body.name === 'string' ? body.name.trim() : '';
+      if (!name || name.length > 120) throw new HttpError(400, 'NAMA_LAHAN_TIDAK_VALID', 'Nama lahan wajib diisi dan maksimal 120 karakter.');
+      sets.push('name = ?'); params.push(name);
+    }
+    if (body.area_ha !== undefined) {
+      const area = Number(body.area_ha);
+      if (!Number.isFinite(area) || area <= 0 || area > 99999999) throw new HttpError(400, 'LUAS_TIDAK_VALID', 'Luas lahan harus berupa angka lebih dari nol.');
+      sets.push('area_ha = ?'); params.push(area);
+    }
+    if (body.status !== undefined) {
+      const status = pickEnum(body.status, PLOT_STATUSES, 'status');
+      if (!status) throw new HttpError(400, 'NILAI_TIDAK_VALID', 'status tidak boleh kosong.');
+      sets.push('status = ?'); params.push(status);
+    }
+    if (body.irrigation_type !== undefined) {
+      const irrigation = body.irrigation_type === null || body.irrigation_type === ''
+        ? null : pickEnum(body.irrigation_type, IRRIGATION_TYPES, 'irrigation_type');
+      sets.push('irrigation_type = ?'); params.push(irrigation);
+    }
+    for (const [field, max] of [['address', 255], ['soil_type', 60]]) {
+      if (body[field] !== undefined) {
+        const value = body[field] === null ? '' : String(body[field]).trim();
+        if (value.length > max) throw new HttpError(400, 'NILAI_TIDAK_VALID', `${field} maksimal ${max} karakter.`);
+        sets.push(`${field} = ?`); params.push(value || null);
+      }
+    }
+    if (body.elevation_m !== undefined) {
+      const raw = body.elevation_m;
+      if (raw === null || raw === '') { sets.push('elevation_m = NULL'); } else {
+        const elevation = Number(raw);
+        if (!Number.isInteger(elevation) || elevation < -100 || elevation > 6000) throw new HttpError(400, 'NILAI_TIDAK_VALID', 'elevation_m harus bilangan bulat -100 sampai 6000.');
+        sets.push('elevation_m = ?'); params.push(elevation);
+      }
+    }
+    if (sets.length === 0) throw new HttpError(400, 'TIDAK_ADA_PERUBAHAN', 'Tidak ada kolom yang diubah.');
+
+    const result = await query(
+      `UPDATE plots SET ${sets.join(', ')} WHERE id = ? AND organization_id = ? AND deleted_at IS NULL`,
+      [...params, plotId, orgId],
+    );
+    if (!result.affectedRows) throw new HttpError(404, 'LAHAN_TIDAK_DITEMUKAN', 'Lahan tidak ditemukan.');
+    const rows = await query(`${PLOT_SELECT} WHERE p.organization_id = ? AND p.id = ?`, [orgId, plotId]);
+    res.json({ data: serializePlot(rows[0]), meta: { organization_id: orgId } });
+  }),
+);
+
+plotRouter.delete(
+  '/organizations/:orgId/plots/:plotId',
+  requireRoles('administrator', 'manajer_lapangan'),
+  asyncHandler(async (req, res) => {
+    const orgId = parseId(req.params.orgId, 'organization id');
+    const plotId = parseId(req.params.plotId, 'plot id');
+    const result = await query(
+      'UPDATE plots SET deleted_at = UTC_TIMESTAMP(6) WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
+      [plotId, orgId],
+    );
+    if (!result.affectedRows) throw new HttpError(404, 'LAHAN_TIDAK_DITEMUKAN', 'Lahan tidak ditemukan.');
+    res.json({ data: { id: plotId, deleted: true } });
   }),
 );
 

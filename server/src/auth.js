@@ -18,7 +18,7 @@ export async function resolveSession(token) {
   if (!token || !/^[a-f\d]{64}$/i.test(token)) return null;
   const tokenHash = createHash('sha256').update(token).digest('hex');
   const rows = await query(
-    `SELECT s.user_id, s.organization_id, m.role, u.full_name, u.email
+    `SELECT s.user_id, s.organization_id, m.role, u.full_name, u.email, u.avatar_path
        FROM user_sessions s
        JOIN users u ON u.id = s.user_id
        JOIN organization_members m
@@ -35,6 +35,7 @@ export async function resolveSession(token) {
     role: rows[0].role,
     full_name: rows[0].full_name,
     email: rows[0].email,
+    avatar_path: rows[0].avatar_path ?? null,
     token_hash: tokenHash,
   } : null;
 }

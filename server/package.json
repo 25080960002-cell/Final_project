@@ -14,7 +14,10 @@
     "check-db": "node scripts/check-db.js",
     "migrate-google-identities": "node scripts/migrate-google-identities.js",
     "provision-admin": "node scripts/provision-admin.js",
-    "set-password": "node scripts/set-password.js"
+    "set-password": "node scripts/set-password.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "test:report": "node scripts/test-report.mjs",
+    "seed-demo": "node scripts/seed-demo.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

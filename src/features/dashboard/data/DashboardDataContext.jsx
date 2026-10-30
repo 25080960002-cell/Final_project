@@ -65,7 +65,33 @@ const mockCommodities = ['Padi', 'Jagung', 'Cabai Merah', 'Kopi Robusta'].map((n
   name,
 }));
 
-const initialState = {
+const blankSummary = {
+  plot_total: 0, area_ha: 0, member_active: 0, group_total: 0, invitation_pending: 0,
+  health_average: 0, health_latest_at: null, plot_status: {}, member_role: {},
+};
+
+const blankOrganization = {
+  id: 0, name: 'Memuat…', type: '', region: '', email: '', registration_no: '', founded_year: null,
+  status: '', plot_total: 0, area_ha: 0, member_active: 0, group_total: 0, pending_invitations: 0,
+};
+
+/** Keadaan awal pengguna asli: kosong, TIDAK pernah memakai data contoh. */
+const blankState = {
+  status: 'loading',
+  source: 'api',
+  error: null,
+  summary: blankSummary,
+  organization: blankOrganization,
+  commodities: [],
+  plots: [],
+  groups: [],
+  teamMembers: [],
+  fetchedAt: null,
+  session: null,
+};
+
+/** Keadaan mode demo (#demo): data contoh, berlabel jelas, tidak tersimpan. */
+const demoState = {
   status: 'loading',
   source: 'mock',
   error: null,
@@ -79,11 +105,16 @@ const initialState = {
   session: null,
 };
 
-export function DashboardDataProvider({ children }) {
-  const [state, setState] = useState(initialState);
+export function DashboardDataProvider({ children, demo = false }) {
+  const baseState = demo ? demoState : blankState;
+  const [state, setState] = useState(baseState);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    if (demo) {
+      setState({ ...demoState, status: 'ready' });
+      return undefined;
+    }
     const controller = new AbortController();
     let active = true;
 
@@ -91,7 +122,7 @@ export function DashboardDataProvider({ children }) {
       .then(async (session) => {
         if (!active) return;
         if (!session) {
-          setState({ ...initialState, status: 'ready', error: null });
+          setState({ ...blankState, status: 'unauth' });
           return;
         }
         const snapshot = await fetchDashboardSnapshot(controller.signal);
@@ -99,20 +130,18 @@ export function DashboardDataProvider({ children }) {
       })
       .catch((error) => {
         if (!active || error.name === 'AbortError') return;
-        setState({
-          ...initialState,
-          status: 'ready',
-          source: 'mock',
-          error: error.status === 401 ? null : error.message,
-          session: null,
-        });
+        if (error.status === 401) {
+          setState({ ...blankState, status: 'unauth' });
+          return;
+        }
+        setState({ ...blankState, status: 'error', error: error.message });
       });
 
     return () => {
       active = false;
       controller.abort();
     };
-  }, [attempt]);
+  }, [attempt, demo]);
 
   useEffect(() => {
     if (state.status !== 'ready' || state.organization?.raw?.settings?.auto_sync !== true) return undefined;
@@ -144,6 +173,7 @@ export function DashboardDataProvider({ children }) {
   const value = useMemo(
     () => ({
       ...state,
+      demo,
       reload: () => setAttempt((count) => count + 1),
       refresh: async () => {
         const snapshot = await fetchDashboardSnapshot();
@@ -165,11 +195,11 @@ export function DashboardDataProvider({ children }) {
         try {
           await apiLogout();
         } finally {
-          setState(initialState);
+          setState(demo ? demoState : { ...blankState, status: 'unauth' });
         }
       },
     }),
-    [state],
+    [state, demo],
   );
 
   return (

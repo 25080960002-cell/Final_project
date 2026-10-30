@@ -48,15 +48,15 @@ function ScrollProgress() {
   return <div className="scroll-progress" ref={barRef} aria-hidden="true" />;
 }
 
-export default function LandingPage({ onEnter, onDashboardEntry, onSignup, onAbout, theme, onToggleTheme }) {
+export default function LandingPage({ onEnter, onDashboardEntry, onRegister, onSignup, onAbout, theme, onToggleTheme }) {
   useScrollReveal();
 
   return (
     <main className="landing">
       <ScrollProgress />
       <a href="#fitur" className="skip-link">Lewati ke konten utama</a>
-      <LandingNavbar onEnter={onEnter} onSignup={onSignup} theme={theme} onThemeToggle={onToggleTheme} />
-      <LandingHero onEnter={onDashboardEntry ?? onEnter} onSignup={onSignup} onAbout={onAbout} />
+      <LandingNavbar onEnter={onEnter} onRegister={onRegister} onSignup={onSignup} theme={theme} onThemeToggle={onToggleTheme} />
+      <LandingHero onEnter={onDashboardEntry ?? onEnter} onRegister={onRegister} onSignup={onSignup} onAbout={onAbout} />
       <EcosystemStrip />
       <DataStrip onAbout={onAbout} />
       <ValueGrid />
@@ -65,8 +65,8 @@ export default function LandingPage({ onEnter, onDashboardEntry, onSignup, onAbo
       <StorySection onAbout={onAbout} />
       <Testimonials />
       <LandingFaq />
-      <LandingCta onEnter={onEnter} onSignup={onSignup} />
-      <LandingFooter onEnter={onEnter} onSignup={onSignup} theme={theme} onThemeToggle={onToggleTheme} />
+      <LandingCta onEnter={onEnter} onRegister={onRegister} onSignup={onSignup} />
+      <LandingFooter onEnter={onEnter} onRegister={onRegister} onSignup={onSignup} theme={theme} onThemeToggle={onToggleTheme} />
     </main>
   );
 }
