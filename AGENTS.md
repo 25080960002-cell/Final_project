@@ -3,6 +3,8 @@
 APLIKASI MAPAN (Manajemen & Analisis Prediksi Agri Nusantara): web app multi-tenant untuk
 manajemen lahan/petak, siklus tanam, catatan operasional, laporan, cuaca, dan prediksi hasil.
 Tugas aktif: **revisi besar tahap akhir** — lihat `docs/REVISI-PROMPT.md`.
+Tugas berikutnya: **versi mobile APK (Expo/React Native)** — lihat
+`docs/plans/planning-apk-mobile.md`.
 
 ## Stack (terverifikasi jalan)
 - Frontend: React 19 + Vite 8 (root `/`, kode di `src/`), hash routing, Radix UI, Recharts.
@@ -29,7 +31,8 @@ Jangan pernah commit `.env`.
 3. Migrasi baru = file baru `008+`, idempotent. Jangan edit 001–007.
 4. Semua input divalidasi di server; pakai prepared statements; isolasi tenant lewat `organization_id`.
 5. Setelah tiap perubahan: `npm run check` (dan test bila sudah ada) harus hijau.
-6. Penyimpangan dari rencana awal (`docs/plans/aplikasi-mapan-v1.md`, `plan.md`) dicatat, bukan disembunyikan.
+6. Penyimpangan dari rencana awal (`docs/plans/aplikasi-mapan-v1.md`,
+   `docs/plans/planning-apk-mobile.md`) dicatat, bukan disembunyikan.
 
 ## Status pengujian
 - `npm test` = unit klien + smoke render (Vite SSR) + uji integrasi API (MySQL, DB `mapan_test`). CI menjalankannya.

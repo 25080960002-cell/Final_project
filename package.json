@@ -16,11 +16,14 @@
     "db:migrate": "npm --prefix server run migrate",
     "db:status": "npm --prefix server run migrate -- --status",
     "db:check": "npm --prefix server run check-db",
+    "db:dump": "node scripts/db-dump.mjs",
     "check": "npm run build && node scripts/check-syntax.mjs",
     "test:web": "node --test \"src/**/*.test.js\"",
     "test:api": "npm --prefix server test",
     "test": "npm run test:web && npm run test:smoke && npm run test:api",
-    "test:smoke": "node scripts/smoke-render.mjs"
+    "test:smoke": "node scripts/smoke-render.mjs",
+    "laporan:pdf": "node scripts/report-pdf.mjs",
+    "html:pdf": "node scripts/report-pdf.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.3.1",

@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>Tugas Personal 1 — Perancangan Database MAPAN</title>
+<style>
+  :root{ --ink:#1c2416; --muted:#5b6553; --line:#d8dccb; --accent:#2f5a1e; --accent-soft:#eef2e6; }
+  @page{ size:A4; margin:18mm 15mm; }
+  *{ box-sizing:border-box; }
+  body{ font-family:"Segoe UI",Arial,sans-serif; color:var(--ink); font-size:10.5pt; line-height:1.55; background:#e9eae4; }
+  .sheet{ background:#fff; max-width:210mm; margin:0 auto; padding:18mm 15mm; }
+  .page-break{ page-break-after:always; }
+  h1,h2,h3{ font-family:Fraunces,Georgia,serif; line-height:1.3; }
+  h2{ font-size:15pt; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:5px; margin:22px 0 12px; }
+  h3{ font-size:12pt; margin:16px 0 6px; color:#24351a; }
+  p{ margin:6px 0; text-align:justify; }
+  ul,ol{ margin:5px 0 9px; padding-left:20px; } li{ margin:2.5px 0; }
+  table{ width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:9pt; }
+  th,td{ border:1px solid var(--line); padding:4px 7px; text-align:left; vertical-align:top; }
+  th{ background:var(--accent-soft); }
+  code{ font-family:Consolas,monospace; font-size:8.8pt; background:#f3f4ee; padding:0 3px; border-radius:3px; }
+  pre{ background:#f6f7f1; border:1px solid var(--line); padding:8px 10px; overflow-x:auto; font-size:7.6pt; line-height:1.35; }
+  pre code{ background:none; padding:0; }
+  .fill{ background:#fff7d6; border-bottom:2px solid #c9a400; }
+  .shot{ border:2px dashed #b3b8a5; background:repeating-linear-gradient(45deg,#f7f8f2,#f7f8f2 12px,#eff1e8 12px,#eff1e8 24px);
+    border-radius:8px; min-height:90px; display:grid; place-items:center; text-align:center; color:#8b9080; font-size:9pt; padding:10px; margin:6px 0 12px; }
+  .erd{ margin:8px 0 14px; }
+  .erow{ display:flex; gap:6px; align-items:stretch; }
+  .erow + .erow{ margin-top:6px; }
+  .ebox{ flex:1; border:1.5px solid var(--accent); border-radius:6px; padding:5px 8px; font-size:8pt; background:#fbfcf8; }
+  .ebox b{ display:block; color:var(--accent); font-size:8.6pt; margin-bottom:3px; font-family:Fraunces,Georgia,serif; }
+  .ebox small{ color:var(--muted); display:block; }
+  .erel{ align-self:center; font-size:12pt; color:var(--accent); text-align:center; flex:0 0 auto; }
+  .cover{ min-height:235mm; display:flex; flex-direction:column; text-align:center; }
+  .cover img{ width:56mm; margin:8mm auto 3mm; display:block; }
+  .cover h1{ font-size:21pt; margin:4mm 0 2mm; color:var(--accent); }
+  .cover .sub{ font-size:11.5pt; color:var(--muted); }
+  .cover .id{ margin-top:auto; margin-bottom:4mm; font-size:11pt; line-height:2; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- COVER -->
+<div class="cover page-break">
+  <div style="margin-top:12mm;font-size:11.5pt">Tugas Personal 1</div>
+  <div style="font-size:13.5pt;font-weight:700;color:#24351a">Perancangan &amp; Implementasi Database</div>
+  <img src="../laporan/assets/mapan-logo-full.png" alt="Logo MAPAN" />
+  <h1>Sistem Informasi MAPAN</h1>
+  <div class="sub">Manajemen &amp; Analisis Prediksi Agri Nusantara</div>
+  <div class="sub" style="font-size:10pt;margin-top:2mm">
+    Analisis sistem · ERD · CDM/PDM · SQL DDL &amp; DML · pengujian query
+  </div>
+  <div class="id">
+    <b>Nama:</b> <span class="fill">[ISI-Oleh-Mahasiswa: nama lengkap]</span><br/>
+    <b>NIM:</b> <span class="fill">[ISI-Oleh-Mahasiswa: NIM]</span><br/>
+    <b>Program Studi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: prodi]</span><br/>
+    <b>Institusi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: kampus]</span> · 2026
+  </div>
+</div>
+
+<!-- 1 ANALISIS -->
+<h2>1. Analisis Sistem Informasi</h2>
+<h3>1.1 Latar belakang</h3>
+<p>Kelompok tani/gapoktan umumnya mencatat kegiatan pertanian secara manual (buku tulis, WhatsApp,
+dan ingatan pengurus). Data lahan, komoditas, anggota, dan hasil panen terserak dan cepat hilang,
+sehingga laporan ke penyuluh/dinas selalu memakan waktu dan keputusan musim berikutnya dilakukan
+tanpa dasar data. <b>MAPAN</b> dibangun sebagai sistem informasi web untuk menyatukan data tersebut
+dalam satu ruang kerja organisasi.</p>
+<h3>1.2 Tujuan sistem</h3>
+<ol>
+  <li>Menjadikan satu sumber data tunggal untuk lahan, anggota, dan kegiatan.</li>
+  <li>Menghitung ringkasan (KPI): jumlah lahan, luas total, jumlah dan progres kegiatan.</li>
+  <li>Memisahkan hak akses: administrator, manajer, petani, penyuluh (baca saja).</li>
+  <li>Menghasilkan laporan siap unduh (CSV) untuk pelaporan organisasi/dinas.</li>
+</ol>
+<h3>1.3 Kebutuhan data</h3>
+<table>
+  <tr><th>Kebutuhan</th><th>Data yang dibutuhkan</th></tr>
+  <tr><td>Identitas organisasi &amp; anggota</td><td>Organisasi, pengguna, keanggotaan dengan peran</td></tr>
+  <tr><td>Inventaris lahan</td><td>Nama lahan, luas, status kesehatan, komoditas, petani pengelola</td></tr>
+  <tr><td>Kegiatan lapangan</td><td>Catatan aktivitas/tugas/panen/scan, tanggal, progres</td></tr>
+  <tr><td>Master produk</td><td>Komoditas, kategori, benchmark produktivitas (ton/ha)</td></tr>
+</table>
+<div class="page-break"></div>
+
+<!-- 2 ERD -->
+<h2>2. Perancangan ERD</h2>
+<p>Tahap ini mengidentifikasi entitas (objek data utama), atributnya, kunci utama
+(<i>primary key</i>), serta relasi antar entitas. Enam entitas berikut dipilih sebagai
+<b>subset nyata dari database MAPAN</b>: hanya bagian yang paling mewakili fungsi utama sistem
+yang diambil, agar memenuhi ketentuan minimal lima tabel berelasi tanpa melepas konteks proyek.</p>
+<h3>2.1 Entitas, atribut, dan primary key</h3>
+<table>
+  <tr><th>Entitas</th><th>Primary key</th><th>Atribut penting</th></tr>
+  <tr><td>COMMODITIES</td><td><code>id</code></td><td>name, category, benchmark_yield</td></tr>
+  <tr><td>USERS</td><td><code>id</code></td><td>name, email (unik), phone, password_hash</td></tr>
+  <tr><td>ORGANIZATIONS</td><td><code>id</code></td><td>name, regency, active</td></tr>
+  <tr><td>ORGANIZATION_MEMBERS</td><td><code>id</code></td><td>organization_id (FK), user_id (FK), role, joined_at — (organization_id, user_id) unik</td></tr>
+  <tr><td>PLOTS</td><td><code>id</code></td><td>organization_id (FK), commodity_id (FK), managed_by (FK), name, area_hectares, status</td></tr>
+  <tr><td>ORGANIZATION_RECORDS</td><td><code>id</code></td><td>organization_id (FK), plot_id (FK), author_id (FK), record_type, title, occurred_on, progress_percent</td></tr>
+</table>
+<h3>2.2 Diagram ERD (notasi &ldquo;kaki gagak&rdquo; / crow's foot)</h3>
+<p>Cara membaca: kotak = entitas/tabel; tulisan di dalamnya = atribut (PK = kunci utama,
+FK = kunci asing/tamu); simbol panah menunjukkan arah relasi dan kardinalitasnya
+(satu — banyak). Tanda (2x)/(3x) berarti tabel USERS ikut terlibat dalam dua dan tiga relasi
+berbeda.</p>
+<div class="erd">
+  <div class="erow">
+    <div class="ebox"><b>COMMODITIES</b><small>PK id · name · category · benchmark_yield</small></div>
+    <div class="erel">1 ⟶∞</div>
+    <div class="ebox" style="flex:1.6"><b>PLOTS</b><small>PK id · FK organization_id · FK commodity_id · FK managed_by · name · area_hectares · status</small></div>
+    <div class="erel">∞ ⟵ 1</div>
+    <div class="ebox"><b>ORGANIZATIONS</b><small>PK id · name · regency · active</small></div>
+  </div>
+  <div class="erow">
+    <div class="ebox"><b>USERS</b><small>PK id · name · email unik · phone · password_hash</small></div>
+    <div class="erel">1 ⟶∞ (2x)</div>
+    <div class="ebox" style="flex:1.6"><b>ORGANIZATION_MEMBERS</b><small>PK id · FK organization_id · FK user_id · role (UIQ: org+user)</small></div>
+    <div class="erel">∞ ⟵ 1</div>
+    <div class="ebox"><b>ORGANIZATIONS</b><small>(tabel sama)</small></div>
+  </div>
+  <div class="erow">
+    <div class="ebox"><b>USERS</b><small>(tabel sama; sebagai penulis)</small></div>
+    <div class="erel">1 ⟶∞ (3x)</div>
+    <div class="ebox" style="flex:1.6"><b>ORGANIZATION_RECORDS</b><small>PK id · FK organization_id · FK plot_id · FK author_id · record_type · title · occurred_on · progress_percent</small></div>
+    <div class="erel">∞ ⟵ 1</div>
+    <div class="ebox"><b>ORGANIZATIONS</b><small>(tabel sama)</small></div>
+  </div>
+</div>
+<table>
+  <tr><th>Relasi</th><th>Jenis</th><th>Keterangan bisnis</th></tr>
+  <tr><td>ORGANIZATIONS 1—∞ ORGANIZATION_MEMBERS ∞—1 USERS</td><td>N : N</td><td>Satu anggota bisa ikut beberapa organisasi dengan peran berbeda</td></tr>
+  <tr><td>ORGANIZATIONS 1—∞ PLOTS</td><td>1 : N</td><td>Satu organisasi punya banyak lahan</td></tr>
+  <tr><td>COMMODITIES 1—∞ PLOTS</td><td>1 : N</td><td>Satu komoditas ditanam di banyak lahan</td></tr>
+  <tr><td>USERS 1—∞ PLOTS (managed_by)</td><td>1 : N</td><td>Satu petani mengelola beberapa lahan</td></tr>
+  <tr><td>ORGANIZATIONS 1—∞ ORGANIZATION_RECORDS</td><td>1 : N</td><td>Catatan selalu milik satu organisasi (ciri aplikasi multi-organisasi)</td></tr>
+  <tr><td>PLOTS 0..1—∞ ORGANIZATION_RECORDS</td><td>opsional 1 : N</td><td>Catatan boleh tidak terkait lahan spesifik</td></tr>
+  <tr><td>USERS 1—∞ ORGANIZATION_RECORDS (author)</td><td>1 : N</td><td>Setiap catatan memiliki penulis</td></tr>
+</table>
+
+<!-- 3 CDM PDM -->
+<div class="page-break"></div>
+<h2>3. Perancangan Database — CDM dan PDM</h2>
+<p>Bagian ini menerjemahkan hasil rancangan tingkat konsep (CDM — <i>Conceptual Data Model</i> /
+Model Data Konseptual: gambaran entitas dan relasi tanpa detail teknis) menjadi rancangan
+tingkat implementasi (PDM — <i>Physical Data Model</i> / Model Data Fisik: tipe data, kunci,
+batasan, dan mesin basis datanya). Tabel berikut memetakan kedua tingkat tersebut dari ERD
+pada Bab 2:</p>
+<table>
+  <tr><th>Aspek</th><th>CDM (konseptual)</th><th>PDM (fisik — MySQL 8)</th></tr>
+  <tr><td>Entitas → objek</td><td>Entitas COMMODITIES, USERS, ORGANIZATIONS, ORGANIZATION_MEMBERS, PLOTS, ORGANIZATION_RECORDS</td><td>Tabel InnoDB <code>utf8mb4_unicode_ci</code></td></tr>
+  <tr><td>Kunci</td><td>Identifier (pembeda): id pada tiap entitas</td><td><code>INT AUTO_INCREMENT PRIMARY KEY</code></td></tr>
+  <tr><td>Relasi</td><td>Keterkaitan antar entitas (1—N, N—N)</td><td><code>FOREIGN KEY (...) REFERENCES ... (id)</code> + <code>UNIQUE KEY</code> untuk N:N (members)</td></tr>
+  <tr><td>Atribut kuantitas</td><td>luas lahan, benchmark</td><td><code>DECIMAL(8,3)</code>, <code>DECIMAL(6,2)</code></td></tr>
+  <tr><td>Atribut status/tipe</td><td>status lahan; peran; jenis catatan</td><td><code>ENUM('sehat','waspada','kritis')</code>, <code>ENUM('pangan','hortikultura','perkebunan')</code>, <code>ENUM('administrator','manager','farmer','extension_officer')</code>, <code>ENUM('activity','task','harvest','scan')</code></td></tr>
+  <tr><td>Data lain</td><td>tanggal kejadian, progres</td><td><code>DATE</code>, <code>TINYINT 0–100</code></td></tr>
+  <tr><td>Keunikan</td><td>email pengguna unik; satu orang satu peran per organisasi</td><td><code>UNIQUE</code> pada <code>email</code>; <code>UNIQUE KEY uq_member(organization_id, user_id)</code></td></tr>
+  <tr><td>Kolom audit</td><td>waktu dibuat</td><td><code>TIMESTAMP DEFAULT CURRENT_TIMESTAMP</code></td></tr>
+</table>
+
+<!-- 4 DDL -->
+<div class="page-break"></div>
+<h2>4. Implementasi Database — SQL DDL</h2>
+<p>Skrip lengkap: <code>mapan-tugas1.sql</code> (file terlampir; di bawah cuplikannya).
+Database dibuat terpisah agar aman dan bisa diulang:</p>
+<pre><code>CREATE DATABASE mapan_tugas1 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE mapan_tugas1;
+
+CREATE TABLE commodities (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  name            VARCHAR(80)  NOT NULL,
+  category        ENUM('pangan','hortikultura','perkebunan') NOT NULL,
+  benchmark_yield DECIMAL(6,2) NOT NULL,
+  created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(100) NOT NULL,
+  email         VARCHAR(150) NOT NULL UNIQUE,
+  phone         VARCHAR(20)  NULL,
+  password_hash CHAR(60)     NOT NULL,
+  created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE organizations (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(150) NOT NULL,
+  regency    VARCHAR(100) NOT NULL DEFAULT 'Kab. Semarang',
+  active     TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE organization_members (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  organization_id INT NOT NULL,
+  user_id         INT NOT NULL,
+  role            ENUM('administrator','manager','farmer','extension_officer') NOT NULL,
+  joined_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_member (organization_id, user_id),
+  FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  FOREIGN KEY (user_id)         REFERENCES users (id)
+);
+
+CREATE TABLE plots (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  organization_id INT NOT NULL,
+  commodity_id    INT NOT NULL,
+  managed_by      INT NULL,
+  name            VARCHAR(120) NOT NULL,
+  area_hectares   DECIMAL(8,3) NOT NULL,
+  status          ENUM('sehat','waspada','kritis') NOT NULL DEFAULT 'sehat',
+  FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  FOREIGN KEY (commodity_id)    REFERENCES commodities (id),
+  FOREIGN KEY (managed_by)      REFERENCES users (id)
+);
+
+CREATE TABLE organization_records (
+  id               INT AUTO_INCREMENT PRIMARY KEY,
+  organization_id  INT NOT NULL,
+  plot_id          INT NULL,
+  author_id        INT NOT NULL,
+  record_type      ENUM('activity','task','harvest','scan') NOT NULL,
+  title            VARCHAR(160) NOT NULL,
+  occurred_on      DATE         NOT NULL,
+  progress_percent TINYINT      NOT NULL DEFAULT 0,
+  FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  FOREIGN KEY (plot_id)         REFERENCES plots (id),
+  FOREIGN KEY (author_id)       REFERENCES users (id)
+);</code></pre>
+
+<!-- 5 DML -->
+<div class="page-break"></div>
+<h2>5. Pengisian Data — SQL DML</h2>
+<h3>5.1 INSERT (pengisian simulasi)</h3>
+<pre><code>INSERT INTO commodities (name, category, benchmark_yield) VALUES
+  ('Padi','pangan',5.20), ('Jagung','pangan',5.80), ('Cabai','hortikultura',8.00),
+  ('Tomat','hortikultura',25.00), ('Kopi','perkebunan',1.10), ('Ubi','pangan',9.00);
+
+INSERT INTO users (name, email, phone, password_hash) VALUES
+  ('Siti Rahayu','siti@tani.id','081200000001','$2y$10$hashsimulasitugas1...0001'),
+  ('Budi Santoso','budi@tani.id','081200000002','$2y$10$hashsimulasitugas1...0002'),
+  ('Agus Priono','agus@tani.id','081200000003','$2y$10$hashsimulasitugas1...0003'),
+  ('Rina Wulandari','rina@tani.id','081200000004','$2y$10$hashsimulasitugas1...0004'),
+  ('Joko Susilo','joko@tani.id','081200000005','$2y$10$hashsimulasitugas1...0005'),
+  ('Dewi Astuti','dewi@tani.id','081200000006','$2y$10$hashsimulasitugas1...0006');
+
+INSERT INTO organizations (name, regency) VALUES
+  ('Gapoktan Tani Makmur','Kab. Semarang'), ('Koperasi Tani Harapan','Kab. Semarang'),
+  ('Gapoktan Mekar Jaya','Kab. Temanggung'), ('Kelompok Hortikultura Sari','Kab. Boyolali'),
+  ('Koperasi Kopi Buana','Kab. Temanggung');
+
+INSERT INTO organization_members (organization_id, user_id, role) VALUES
+  (1,1,'administrator'), (1,2,'manager'), (1,3,'farmer'), (1,4,'extension_officer'),
+  (2,5,'administrator'), (2,3,'farmer'), (3,6,'administrator'), (4,1,'manager');
+
+INSERT INTO plots (organization_id, commodity_id, managed_by, name, area_hectares, status) VALUES
+  (1,1,3,'Sawah Blok Utara',1.250,'sehat'), (1,2,3,'Jagung Blok Selatan',0.800,'waspada'),
+  (1,3,2,'Kebun Cabai Belakang',0.400,'kritis'), (2,4,5,'Kebun Tomat Rini',0.500,'sehat'),
+  (2,1,5,'Sawah Debogor',2.100,'sehat'), (3,5,6,'Lahan Kopi Lereng',3.500,'waspada');
+
+INSERT INTO organization_records (organization_id, plot_id, author_id, record_type, title, occurred_on, progress_percent) VALUES
+  (1,1,3,'activity','Pemupukan tahap 2 Sawah Blok Utara','2026-10-05',100),
+  (1,2,3,'task','Penyemprotan hama Jagung Selatan','2026-10-12',70),
+  (1,3,2,'scan','Pemeriksaan gejala daun keriting cabai','2026-10-15',60),
+  (1,1,1,'harvest','Panen perdana Sawah Blok Utara','2026-10-30',100),
+  (2,5,5,'activity','Penyiaran benih Sawah Debogor','2026-09-28',100),
+  (2,4,5,'harvest','Panen tomat gelombang 1','2026-10-20',100),
+  (3,6,6,'activity','Pemangkasan kopi Lereng','2026-10-08',45);</code></pre>
+<p>Ringkasan jumlah baris per tabel (dari hasil eksekusi): <b>commodities 6 · users 6 ·
+organizations 5 · organization_members 8 · plots 6 · organization_records 7</b> — memenuhi syarat
+min. 5 baris per tabel.</p>
+
+<h3>5.2 UPDATE (manipulasi pembaruan)</h3>
+<pre><code>UPDATE plots SET status='waspada' WHERE id=3;                  -- lahan kritis sudah ditindaklanjuti
+UPDATE organization_records SET progress_percent=100
+  WHERE title='Penyemprotan hama Jagung Selatan';              -- tugas selesai</code></pre>
+<h3>5.3 DELETE (manipulasi penghapusan)</h3>
+<pre><code>INSERT INTO organization_records (organization_id, plot_id, author_id, record_type, title, occurred_on)
+  VALUES (1,2,3,'task','Catatan sementara untuk dihapus','2026-10-18');
+DELETE FROM organization_records WHERE title='Catatan sementara untuk dihapus';
+-- hasil eksekusi: 1 row affected (baris simulasi dibuat lalu dihapus)</code></pre>
+<div class="page-break"></div>
+
+<!-- 6 QUERY -->
+<h2>6. Pengujian Query + Hasil Eksekusi Nyata</h2>
+<p>Aktivitas eksekusi: MySQL 8.4.3 lokal, user <code>mapan</code>, database <code>mapan_tugas1</code>.
+Bukti eksekusi utuh: file <code>hasil-eksekusi.txt</code> (transkrip CLI, 14 result set, tanpa ERROR).</p>
+
+<h3>Q1 — Menampilkan data (SELECT + 2 JOIN)</h3>
+<pre><code>SELECT p.id, p.name AS lahan, c.name AS komoditas, o.name AS organisasi,
+       p.area_hectares AS luas_ha, p.status
+FROM plots p
+JOIN commodities c   ON c.id = p.commodity_id
+JOIN organizations o ON o.id = p.organization_id;</code></pre>
+<pre>+----+----------------------+-----------+-----------------------+---------+---------+
+| id | lahan                | komoditas | organisasi            | luas_ha | status  |
++----+----------------------+-----------+-----------------------+---------+---------+
+|  1 | Sawah Blok Utara     | Padi      | Gapoktan Tani Makmur  |   1.250 | sehat   |
+|  2 | Jagung Blok Selatan  | Jagung    | Gapoktan Tani Makmur  |   0.800 | waspada |
+|  3 | Kebun Cabai Belakang | Cabai     | Gapoktan Tani Makmur  |   0.400 | waspada |
+|  4 | Kebun Tomat Rini     | Tomat     | Koperasi Tani Harapan |   0.500 | sehat   |
+|  5 | Sawah Debogor        | Padi      | Koperasi Tani Harapan |   2.100 | sehat   |
+|  6 | Lahan Kopi Lereng    | Kopi      | Gapoktan Mekar Jaya   |   3.500 | waspada |
++----+----------------------+-----------+-----------------------+---------+---------+
+6 rows in set (0.00 sec)</pre>
+
+<h3>Q2 — Menggabungkan 3 tabel (users · members · organizations)</h3>
+<pre><code>SELECT u.name AS pengguna, u.email, m.role AS peran, o.name AS organisasi
+FROM organization_members m
+JOIN users u         ON u.id = m.user_id
+JOIN organizations o ON o.id = m.organization_id
+ORDER BY o.name, m.role;</code></pre>
+<pre>+----------------+--------------+-------------------+----------------------------+
+| pengguna       | email        | peran             | organisasi                 |
++----------------+--------------+-------------------+----------------------------+
+| Dewi Astuti    | dewi@tani.id | administrator     | Gapoktan Mekar Jaya        |
+| Siti Rahayu    | siti@tani.id | administrator     | Gapoktan Tani Makmur       |
+| Budi Santoso   | budi@tani.id | manager           | Gapoktan Tani Makmur       |
+| Agus Priono    | agus@tani.id | farmer            | Gapoktan Tani Makmur       |
+| Rina Wulandari | rina@tani.id | extension_officer | Gapoktan Tani Makmur       |
+| Siti Rahayu    | siti@tani.id | manager           | Kelompok Hortikultura Sari |
+| Joko Susilo    | joko@tani.id | administrator     | Koperasi Tani Harapan      |
+| Agus Priono    | agus@tani.id | farmer            | Koperasi Tani Harapan      |
++----------------+--------------+-------------------+----------------------------+
+8 rows in set (0.00 sec)</pre>
+
+<h3>Q3a — Menyaring data (WHERE + OR)</h3>
+<pre><code>SELECT p.name AS lahan, o.name AS organisasi, p.area_hectares AS luas_ha, p.status
+FROM plots p
+JOIN organizations o ON o.id = p.organization_id
+WHERE p.status = 'kritis' OR p.area_hectares > 1.000;</code></pre>
+<pre>+-------------------+-----------------------+---------+---------+
+| lahan             | organisasi            | luas_ha | status  |
++-------------------+-----------------------+---------+---------+
+| Sawah Blok Utara  | Gapoktan Tani Makmur  |   1.250 | sehat   |
+| Sawah Debogor     | Koperasi Tani Harapan |   2.100 | sehat   |
+| Lahan Kopi Lereng | Gapoktan Mekar Jaya   |   3.500 | waspada |
++-------------------+-----------------------+---------+---------+
+3 rows in set (0.00 sec)</pre>
+
+<h3>Q3b — Menyaring (panen selesai, LEFT JOIN)</h3>
+<pre><code>SELECT r.title, r.occurred_on, r.progress_percent, p.name AS lahan
+FROM organization_records r
+LEFT JOIN plots p ON p.id = r.plot_id
+WHERE r.record_type = 'harvest' AND r.progress_percent >= 100;</code></pre>
+<pre>+--------------------------------+-------------+------------------+------------------+
+| title                          | occurred_on | progress_percent | lahan            |
++--------------------------------+-------------+------------------+------------------+
+| Panen perdana Sawah Blok Utara | 2026-10-30  |              100 | Sawah Blok Utara |
+| Panen tomat gelombang 1        | 2026-10-20  |              100 | Kebun Tomat Rini |
++--------------------------------+-------------+------------------+------------------+
+2 rows in set (0.00 sec)</pre>
+
+<h3>Q4a — Merekapitulasi (GROUP BY + COUNT + SUM)</h3>
+<pre><code>SELECT o.name AS organisasi, COUNT(*) AS jumlah_lahan,
+       SUM(p.area_hectares) AS total_luas_ha
+FROM plots p
+JOIN organizations o ON o.id = p.organization_id
+GROUP BY o.name;</code></pre>
+<pre>+-----------------------+--------------+---------------+
+| organisasi            | jumlah_lahan | total_luas_ha |
++-----------------------+--------------+---------------+
+| Gapoktan Tani Makmur  |            3 |         2.450 |
+| Koperasi Tani Harapan |            2 |         2.600 |
+| Gapoktan Mekar Jaya   |            1 |         3.500 |
++-----------------------+--------------+---------------+
+3 rows in set (0.00 sec)</pre>
+
+<h3>Q4b — Rekap jumlah catatan per organisasi &amp; jenis (GROUP BY 2 kolom + ORDER BY)</h3>
+<pre><code>SELECT o.name AS organisasi, r.record_type AS jenis, COUNT(*) AS jumlah
+FROM organization_records r
+JOIN organizations o ON o.id = r.organization_id
+GROUP BY o.name, r.record_type
+ORDER BY o.name, jumlah DESC;</code></pre>
+<pre>+-----------------------+----------+--------+
+| organisasi            | jenis    | jumlah |
++-----------------------+----------+--------+
+| Gapoktan Mekar Jaya   | activity |      1 |
+| Gapoktan Tani Makmur  | activity |      1 |
+| Gapoktan Tani Makmur  | task     |      1 |
+| Gapoktan Tani Makmur  | scan     |      1 |
+| Gapoktan Tani Makmur  | harvest  |      1 |
+| Koperasi Tani Harapan | activity |      1 |
+| Koperasi Tani Harapan | harvest  |      1 |
++-----------------------+----------+--------+
+7 rows in set (0.00 sec)</pre>
+
+<h3>Q4c — Rekap anggota per peran (GROUP BY + COUNT)</h3>
+<pre><code>SELECT m.role AS peran, COUNT(*) AS jumlah_anggota
+FROM organization_members m
+GROUP BY m.role
+ORDER BY jumlah_anggota DESC;</code></pre>
+<pre>+-------------------+----------------+
+| peran             | jumlah_anggota |
++-------------------+----------------+
+| administrator     |              3 |
+| manager           |              2 |
+| farmer            |              2 |
+| extension_officer |              1 |
++-------------------+----------------+
+4 rows in set (0.00 sec)</pre>
+
+<h3>Q4d — (bonus) rata-rata progres per komoditas (3 tabel + AVG)</h3>
+<pre><code>SELECT c.name AS komoditas, COUNT(r.id) AS jumlah_catatan,
+       ROUND(AVG(r.progress_percent), 1) AS rata_progres
+FROM organization_records r
+LEFT JOIN plots p ON p.id = r.plot_id
+JOIN commodities c ON c.id = p.commodity_id
+GROUP BY c.name
+ORDER BY rata_progres DESC;</code></pre>
+<pre>+-----------+----------------+--------------+
+| komoditas | jumlah_catatan | rata_progres |
++-----------+----------------+--------------+
+| Padi      |              3 |        100.0 |
+| Jagung    |              1 |        100.0 |
+| Tomat     |              1 |        100.0 |
+| Cabai     |              1 |         60.0 |
+| Kopi      |              1 |         45.0 |
++-----------+----------------+--------------+
+5 rows in set (0.00 sec)</pre>
+
+<h3>Slot tangkap layar milikmu (opsional — bukti transkrip sudah lengkap)</h3>
+<div class="shot">[Screenshot: konsol mysql saat menjalankan mapan-tugas1.sql]</div>
+<div class="shot">[Screenshot: hasil Q1–Q4 dari console mysql / MySQL Workbench]</div>
+<div class="page-break"></div>
+
+<!-- PENUTUP -->
+<h2>Kesimpulan</h2>
+<ul>
+  <li>Sistem informasi MAPAN direpresentasikan sebagai 6 tabel berelasi (≥ syarat 5 tabel) dengan
+      relasi master-detail (organisasi→lahan→catatan) dan N:N (anggota organisasi).</li>
+  <li>DDL/DML tereksekusi nyata pada MySQL 8.4.3: <b>exit 0 tanpa ERROR</b>; seluruh tabel terisi
+      ≥ 5 baris data simulasi; UPDATE/DELETE terbukti mengubah/menghapus data.</li>
+  <li>8 query pengujian menampilkan, menggabungkan (JOIN 2–3 tabel), memfilter (WHERE), dan
+      merekapitulasi (GROUP BY + COUNT/SUM/AVG) data sesuai kebutuhan sistem.</li>
+</ul>
+<p style="color:var(--muted);font-size:9pt">Disusun dengan bantuan AI coding tool (<i>vibe coding</i>) lalu diverifikasi dengan eksekusi nyata.
+Transkrip penuh: <code>hasil-eksekusi.txt</code>; pelan pengerjaan: <code>docs/plans/planning-tugas-personal-1-database.md</code>.</p>
+
+</div><!-- /sheet -->
+</body>
+</html>

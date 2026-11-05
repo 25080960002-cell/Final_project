@@ -1,0 +1,743 @@
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- TUGAS PERSONAL 1 ??? DATABASE
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- Sistem: MAPAN (Manajemen & Analisis Prediksi Agri Nusantara)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- Versi subset pendidikan: 6 tabel berelasi
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- Catatan: menjalankan file ini membangun ulang database mapan_tugas1
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--          (aman diulang, semua DROP IF EXISTS di awal)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- Jalankan: mysql -u <user> -p < mapan-tugas1.sql
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+DROP DATABASE IF EXISTS mapan_tugas1
+--------------
+
+Query OK, 6 rows affected (0.10 sec)
+
+--------------
+CREATE DATABASE mapan_tugas1 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+--------------
+
+Query OK, 1 row affected (0.01 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- BAGIAN 4 ??? IMPLEMENTASI DATABASE (SQL DDL)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- 6 tabel: commodities, users, organizations, organization_members,
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--          plots, organization_records
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- 4.1 Master komoditas
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+CREATE TABLE commodities (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  name            VARCHAR(80)  NOT NULL,
+  category        ENUM('pangan','hortikultura','perkebunan') NOT NULL,
+  benchmark_yield DECIMAL(6,2) NOT NULL COMMENT 'benchmark ton/hektar',
+  created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+--------------
+
+Query OK, 0 rows affected (0.02 sec)
+
+--------------
+-- 4.2 Pengguna
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+CREATE TABLE users (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(100) NOT NULL,
+  email         VARCHAR(150) NOT NULL UNIQUE,
+  phone         VARCHAR(20)  NULL,
+  password_hash CHAR(60)     NOT NULL COMMENT 'hash bcrypt, lihat dokumen keamanan',
+  created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+--------------
+
+Query OK, 0 rows affected (0.03 sec)
+
+--------------
+-- 4.3 Organisasi (kelompok tani/koperasi)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+CREATE TABLE organizations (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(150) NOT NULL,
+  regency    VARCHAR(100) NOT NULL DEFAULT 'Kab. Semarang',
+  active     TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+--------------
+
+Query OK, 0 rows affected, 1 warning (0.02 sec)
+
+--------------
+-- 4.4 Anggota organisasi ??? relasi N:N users <-> organizations + peran
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+CREATE TABLE organization_members (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  organization_id INT NOT NULL,
+  user_id         INT NOT NULL,
+  role            ENUM('administrator','manager','farmer','extension_officer') NOT NULL,
+  joined_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_member (organization_id, user_id),
+  FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  FOREIGN KEY (user_id)         REFERENCES users (id)
+)
+--------------
+
+Query OK, 0 rows affected (0.04 sec)
+
+--------------
+-- 4.5 Lahan/petak
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+CREATE TABLE plots (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  organization_id INT NOT NULL,
+  commodity_id    INT NOT NULL,
+  managed_by      INT NULL COMMENT 'petani pengelola',
+  name            VARCHAR(120) NOT NULL,
+  area_hectares   DECIMAL(8,3) NOT NULL,
+  status          ENUM('sehat','waspada','kritis') NOT NULL DEFAULT 'sehat',
+  FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  FOREIGN KEY (commodity_id)    REFERENCES commodities (id),
+  FOREIGN KEY (managed_by)      REFERENCES users (id)
+)
+--------------
+
+Query OK, 0 rows affected (0.04 sec)
+
+--------------
+-- 4.6 Catatan operasional (aktivitas/tugas/panen/scan)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+CREATE TABLE organization_records (
+  id               INT AUTO_INCREMENT PRIMARY KEY,
+  organization_id  INT NOT NULL,
+  plot_id          INT NULL,
+  author_id        INT NOT NULL,
+  record_type      ENUM('activity','task','harvest','scan') NOT NULL,
+  title            VARCHAR(160) NOT NULL,
+  occurred_on      DATE         NOT NULL,
+  progress_percent TINYINT      NOT NULL DEFAULT 0,
+  FOREIGN KEY (organization_id) REFERENCES organizations (id),
+  FOREIGN KEY (plot_id)         REFERENCES plots (id),
+  FOREIGN KEY (author_id)       REFERENCES users (id)
+)
+--------------
+
+Query OK, 0 rows affected (0.04 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- BAGIAN 5 ??? PENGISIAN DATA (SQL DML)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- 5.1 INSERT komoditas (6 baris)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO commodities (name, category, benchmark_yield) VALUES
+  ('Padi',   'pangan',       5.20),
+  ('Jagung', 'pangan',       5.80),
+  ('Cabai',  'hortikultura', 8.00),
+  ('Tomat',  'hortikultura',25.00),
+  ('Kopi',   'perkebunan',   1.10),
+  ('Ubi',    'pangan',       9.00)
+--------------
+
+Query OK, 6 rows affected (0.00 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5.2 INSERT pengguna (6 baris, password_hash = contoh hash bcrypt fiktif)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO users (name, email, phone, password_hash) VALUES
+  ('Siti Rahayu',    'siti@tani.id',   '081200000001', '$2y$10$hashsimulasitugas100000000000000000000000000000000001'),
+  ('Budi Santoso',   'budi@tani.id',   '081200000002', '$2y$10$hashsimulasitugas100000000000000000000000000000000001'),
+  ('Agus Priono',    'agus@tani.id',   '081200000003', '$2y$10$hashsimulasitugas100000000000000000000000000000000001'),
+  ('Rina Wulandari', 'rina@tani.id',   '081200000004', '$2y$10$hashsimulasitugas100000000000000000000000000000000001'),
+  ('Joko Susilo',    'joko@tani.id',   '081200000005', '$2y$10$hashsimulasitugas100000000000000000000000000000000001'),
+  ('Dewi Astuti',    'dewi@tani.id',   '081200000006', '$2y$10$hashsimulasitugas100000000000000000000000000000000001')
+--------------
+
+Query OK, 6 rows affected (0.01 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5.3 INSERT organisasi (5 baris)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO organizations (name, regency) VALUES
+  ('Gapoktan Tani Makmur',        'Kab. Semarang'),
+  ('Koperasi Tani Harapan',       'Kab. Semarang'),
+  ('Gapoktan Mekar Jaya',         'Kab. Temanggung'),
+  ('Kelompok Hortikultura Sari',  'Kab. Boyolali'),
+  ('Koperasi Kopi Buana',         'Kab. Temanggung')
+--------------
+
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5.4 INSERT anggota organisasi (8 baris: N:N users-organizations)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO organization_members (organization_id, user_id, role) VALUES
+  (1, 1, 'administrator'),
+  (1, 2, 'manager'),
+  (1, 3, 'farmer'),
+  (1, 4, 'extension_officer'),
+  (2, 5, 'administrator'),
+  (2, 3, 'farmer'),
+  (3, 6, 'administrator'),
+  (4, 1, 'manager')
+--------------
+
+Query OK, 8 rows affected (0.01 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5.5 INSERT lahan (6 baris)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO plots (organization_id, commodity_id, managed_by, name, area_hectares, status) VALUES
+  (1, 1, 3, 'Sawah Blok Utara',     1.250, 'sehat'),
+  (1, 2, 3, 'Jagung Blok Selatan',  0.800, 'waspada'),
+  (1, 3, 2, 'Kebun Cabai Belakang', 0.400, 'kritis'),
+  (2, 4, 5, 'Kebun Tomat Rini',     0.500, 'sehat'),
+  (2, 1, 5, 'Sawah Debogor',        2.100, 'sehat'),
+  (3, 5, 6, 'Lahan Kopi Lereng',    3.500, 'waspada')
+--------------
+
+Query OK, 6 rows affected (0.00 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5.6 INSERT catatan operasional (7 baris)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO organization_records (organization_id, plot_id, author_id, record_type, title, occurred_on, progress_percent) VALUES
+  (1, 1, 3, 'activity', 'Pemupukan tahap 2 Sawah Blok Utara',      '2026-10-05', 100),
+  (1, 2, 3, 'task',     'Penyemprotan hama Jagung Selatan',        '2026-10-12', 70),
+  (1, 3, 2, 'scan',     'Pemeriksaan gejala daun keriting cabai',  '2026-10-15', 60),
+  (1, 1, 1, 'harvest',  'Panen perdana Sawah Blok Utara',          '2026-10-30', 100),
+  (2, 5, 5, 'activity', 'Penyiaran benih Sawah Debogor',           '2026-09-28', 100),
+  (2, 4, 5, 'harvest',  'Panen tomat gelombang 1',                 '2026-10-20', 100),
+  (3, 6, 6, 'activity', 'Pemangkasan kopi Lereng',                 '2026-10-08', 45)
+--------------
+
+Query OK, 7 rows affected (0.01 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+--------------
+-- 5.7 UPDATE ??? memperbarui data yang ada:
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--     a) status lahan kritis diturunkan jadi waspada setelah tindak lanjut
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+UPDATE plots SET status = 'waspada' WHERE id = 3
+--------------
+
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+--------------
+--     b) progres tugas penyemprotan naik ke 100%
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+UPDATE organization_records SET progress_percent = 100
+  WHERE title = 'Penyemprotan hama Jagung Selatan'
+--------------
+
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+--------------
+-- 5.8 DELETE ??? menghapus satu catatan simulasi yang salah input:
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--     (buat dulu baris datanya, lalu hapus agar hasil eksekusi terlihat)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+INSERT INTO organization_records (organization_id, plot_id, author_id, record_type, title, occurred_on)
+  VALUES (1, 2, 3, 'task', 'Catatan sementara untuk dihapus', '2026-10-18')
+--------------
+
+Query OK, 1 row affected (0.00 sec)
+
+--------------
+DELETE FROM organization_records WHERE title = 'Catatan sementara untuk dihapus'
+--------------
+
+Query OK, 1 row affected (0.00 sec)
+
+--------------
+-- 5.9 Verifikasi isi tabel seluruhnya
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT * FROM commodities
+--------------
+
++----+--------+--------------+-----------------+---------------------+
+| id | name   | category     | benchmark_yield | created_at          |
++----+--------+--------------+-----------------+---------------------+
+|  1 | Padi   | pangan       |            5.20 | 2026-11-04 19:16:56 |
+|  2 | Jagung | pangan       |            5.80 | 2026-11-04 19:16:56 |
+|  3 | Cabai  | hortikultura |            8.00 | 2026-11-04 19:16:56 |
+|  4 | Tomat  | hortikultura |           25.00 | 2026-11-04 19:16:56 |
+|  5 | Kopi   | perkebunan   |            1.10 | 2026-11-04 19:16:56 |
+|  6 | Ubi    | pangan       |            9.00 | 2026-11-04 19:16:56 |
++----+--------+--------------+-----------------+---------------------+
+6 rows in set (0.00 sec)
+
+--------------
+SELECT * FROM users
+--------------
+
++----+----------------+--------------+--------------+--------------------------------------------------------------+---------------------+
+| id | name           | email        | phone        | password_hash                                                | created_at          |
++----+----------------+--------------+--------------+--------------------------------------------------------------+---------------------+
+|  1 | Siti Rahayu    | siti@tani.id | 081200000001 | $2y$10$hashsimulasitugas100000000000000000000000000000000001 | 2026-11-04 19:16:56 |
+|  2 | Budi Santoso   | budi@tani.id | 081200000002 | $2y$10$hashsimulasitugas100000000000000000000000000000000001 | 2026-11-04 19:16:56 |
+|  3 | Agus Priono    | agus@tani.id | 081200000003 | $2y$10$hashsimulasitugas100000000000000000000000000000000001 | 2026-11-04 19:16:56 |
+|  4 | Rina Wulandari | rina@tani.id | 081200000004 | $2y$10$hashsimulasitugas100000000000000000000000000000000001 | 2026-11-04 19:16:56 |
+|  5 | Joko Susilo    | joko@tani.id | 081200000005 | $2y$10$hashsimulasitugas100000000000000000000000000000000001 | 2026-11-04 19:16:56 |
+|  6 | Dewi Astuti    | dewi@tani.id | 081200000006 | $2y$10$hashsimulasitugas100000000000000000000000000000000001 | 2026-11-04 19:16:56 |
++----+----------------+--------------+--------------+--------------------------------------------------------------+---------------------+
+6 rows in set (0.00 sec)
+
+--------------
+SELECT * FROM organizations
+--------------
+
++----+----------------------------+-----------------+--------+---------------------+
+| id | name                       | regency         | active | created_at          |
++----+----------------------------+-----------------+--------+---------------------+
+|  1 | Gapoktan Tani Makmur       | Kab. Semarang   |      1 | 2026-11-04 19:16:56 |
+|  2 | Koperasi Tani Harapan      | Kab. Semarang   |      1 | 2026-11-04 19:16:56 |
+|  3 | Gapoktan Mekar Jaya        | Kab. Temanggung |      1 | 2026-11-04 19:16:56 |
+|  4 | Kelompok Hortikultura Sari | Kab. Boyolali   |      1 | 2026-11-04 19:16:56 |
+|  5 | Koperasi Kopi Buana        | Kab. Temanggung |      1 | 2026-11-04 19:16:56 |
++----+----------------------------+-----------------+--------+---------------------+
+5 rows in set (0.00 sec)
+
+--------------
+SELECT * FROM organization_members
+--------------
+
++----+-----------------+---------+-------------------+---------------------+
+| id | organization_id | user_id | role              | joined_at           |
++----+-----------------+---------+-------------------+---------------------+
+|  1 |               1 |       1 | administrator     | 2026-11-04 19:16:56 |
+|  2 |               1 |       2 | manager           | 2026-11-04 19:16:56 |
+|  3 |               1 |       3 | farmer            | 2026-11-04 19:16:56 |
+|  4 |               1 |       4 | extension_officer | 2026-11-04 19:16:56 |
+|  5 |               2 |       5 | administrator     | 2026-11-04 19:16:56 |
+|  6 |               2 |       3 | farmer            | 2026-11-04 19:16:56 |
+|  7 |               3 |       6 | administrator     | 2026-11-04 19:16:56 |
+|  8 |               4 |       1 | manager           | 2026-11-04 19:16:56 |
++----+-----------------+---------+-------------------+---------------------+
+8 rows in set (0.00 sec)
+
+--------------
+SELECT * FROM plots
+--------------
+
++----+-----------------+--------------+------------+----------------------+---------------+---------+
+| id | organization_id | commodity_id | managed_by | name                 | area_hectares | status  |
++----+-----------------+--------------+------------+----------------------+---------------+---------+
+|  1 |               1 |            1 |          3 | Sawah Blok Utara     |         1.250 | sehat   |
+|  2 |               1 |            2 |          3 | Jagung Blok Selatan  |         0.800 | waspada |
+|  3 |               1 |            3 |          2 | Kebun Cabai Belakang |         0.400 | waspada |
+|  4 |               2 |            4 |          5 | Kebun Tomat Rini     |         0.500 | sehat   |
+|  5 |               2 |            1 |          5 | Sawah Debogor        |         2.100 | sehat   |
+|  6 |               3 |            5 |          6 | Lahan Kopi Lereng    |         3.500 | waspada |
++----+-----------------+--------------+------------+----------------------+---------------+---------+
+6 rows in set (0.00 sec)
+
+--------------
+SELECT * FROM organization_records
+--------------
+
++----+-----------------+---------+-----------+-------------+----------------------------------------+-------------+------------------+
+| id | organization_id | plot_id | author_id | record_type | title                                  | occurred_on | progress_percent |
++----+-----------------+---------+-----------+-------------+----------------------------------------+-------------+------------------+
+|  1 |               1 |       1 |         3 | activity    | Pemupukan tahap 2 Sawah Blok Utara     | 2026-10-05  |              100 |
+|  2 |               1 |       2 |         3 | task        | Penyemprotan hama Jagung Selatan       | 2026-10-12  |              100 |
+|  3 |               1 |       3 |         2 | scan        | Pemeriksaan gejala daun keriting cabai | 2026-10-15  |               60 |
+|  4 |               1 |       1 |         1 | harvest     | Panen perdana Sawah Blok Utara         | 2026-10-30  |              100 |
+|  5 |               2 |       5 |         5 | activity    | Penyiaran benih Sawah Debogor          | 2026-09-28  |              100 |
+|  6 |               2 |       4 |         5 | harvest     | Panen tomat gelombang 1                | 2026-10-20  |              100 |
+|  7 |               3 |       6 |         6 | activity    | Pemangkasan kopi Lereng                | 2026-10-08  |               45 |
++----+-----------------+---------+-----------+-------------+----------------------------------------+-------------+------------------+
+7 rows in set (0.00 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- BAGIAN 6 ??? PENGUJIAN QUERY
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- =====================================================================
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+-- Q1 Menampilkan data (SELECT + JOIN):
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--    Katalog lahan + komoditas + organisasi
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT p.id, p.name AS lahan, c.name AS komoditas, o.name AS organisasi,
+       p.area_hectares AS luas_ha, p.status
+FROM plots p
+JOIN commodities c   ON c.id = p.commodity_id
+JOIN organizations o ON o.id = p.organization_id
+--------------
+
++----+----------------------+-----------+-----------------------+---------+---------+
+| id | lahan                | komoditas | organisasi            | luas_ha | status  |
++----+----------------------+-----------+-----------------------+---------+---------+
+|  1 | Sawah Blok Utara     | Padi      | Gapoktan Tani Makmur  |   1.250 | sehat   |
+|  2 | Jagung Blok Selatan  | Jagung    | Gapoktan Tani Makmur  |   0.800 | waspada |
+|  3 | Kebun Cabai Belakang | Cabai     | Gapoktan Tani Makmur  |   0.400 | waspada |
+|  4 | Kebun Tomat Rini     | Tomat     | Koperasi Tani Harapan |   0.500 | sehat   |
+|  5 | Sawah Debogor        | Padi      | Koperasi Tani Harapan |   2.100 | sehat   |
+|  6 | Lahan Kopi Lereng    | Kopi      | Gapoktan Mekar Jaya   |   3.500 | waspada |
++----+----------------------+-----------+-----------------------+---------+---------+
+6 rows in set (0.00 sec)
+
+--------------
+-- Q2 Menggabungkan tabel (3 tabel: users - members - organizations)
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT u.name AS pengguna, u.email, m.role AS peran, o.name AS organisasi
+FROM organization_members m
+JOIN users u         ON u.id = m.user_id
+JOIN organizations o ON o.id = m.organization_id
+ORDER BY o.name, m.role
+--------------
+
++----------------+--------------+-------------------+----------------------------+
+| pengguna       | email        | peran             | organisasi                 |
++----------------+--------------+-------------------+----------------------------+
+| Dewi Astuti    | dewi@tani.id | administrator     | Gapoktan Mekar Jaya        |
+| Siti Rahayu    | siti@tani.id | administrator     | Gapoktan Tani Makmur       |
+| Budi Santoso   | budi@tani.id | manager           | Gapoktan Tani Makmur       |
+| Agus Priono    | agus@tani.id | farmer            | Gapoktan Tani Makmur       |
+| Rina Wulandari | rina@tani.id | extension_officer | Gapoktan Tani Makmur       |
+| Siti Rahayu    | siti@tani.id | manager           | Kelompok Hortikultura Sari |
+| Joko Susilo    | joko@tani.id | administrator     | Koperasi Tani Harapan      |
+| Agus Priono    | agus@tani.id | farmer            | Koperasi Tani Harapan      |
++----------------+--------------+-------------------+----------------------------+
+8 rows in set (0.00 sec)
+
+--------------
+-- Q3 Mem-filter data:
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--    a) lahan milik status kritis ATAU luas > 1 hektar
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT p.name AS lahan, o.name AS organisasi, p.area_hectares AS luas_ha, p.status
+FROM plots p
+JOIN organizations o ON o.id = p.organization_id
+WHERE p.status = 'kritis' OR p.area_hectares > 1.000
+--------------
+
++-------------------+-----------------------+---------+---------+
+| lahan             | organisasi            | luas_ha | status  |
++-------------------+-----------------------+---------+---------+
+| Sawah Blok Utara  | Gapoktan Tani Makmur  |   1.250 | sehat   |
+| Sawah Debogor     | Koperasi Tani Harapan |   2.100 | sehat   |
+| Lahan Kopi Lereng | Gapoktan Mekar Jaya   |   3.500 | waspada |
++-------------------+-----------------------+---------+---------+
+3 rows in set (0.00 sec)
+
+--------------
+--    b) catatan panen yang sudah selesai
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT r.title, r.occurred_on, r.progress_percent, p.name AS lahan
+FROM organization_records r
+LEFT JOIN plots p ON p.id = r.plot_id
+WHERE r.record_type = 'harvest' AND r.progress_percent >= 100
+--------------
+
++--------------------------------+-------------+------------------+------------------+
+| title                          | occurred_on | progress_percent | lahan            |
++--------------------------------+-------------+------------------+------------------+
+| Panen perdana Sawah Blok Utara | 2026-10-30  |              100 | Sawah Blok Utara |
+| Panen tomat gelombang 1        | 2026-10-20  |              100 | Kebun Tomat Rini |
++--------------------------------+-------------+------------------+------------------+
+2 rows in set (0.00 sec)
+
+--------------
+-- Q4 Merekapitulasi data (GROUP BY + agregat):
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+--    a) luas & jumlah lahan per organisasi
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT o.name AS organisasi, COUNT(*) AS jumlah_lahan,
+       SUM(p.area_hectares) AS total_luas_ha
+FROM plots p
+JOIN organizations o ON o.id = p.organization_id
+GROUP BY o.name
+--------------
+
++-----------------------+--------------+---------------+
+| organisasi            | jumlah_lahan | total_luas_ha |
++-----------------------+--------------+---------------+
+| Gapoktan Tani Makmur  |            3 |         2.450 |
+| Koperasi Tani Harapan |            2 |         2.600 |
+| Gapoktan Mekar Jaya   |            1 |         3.500 |
++-----------------------+--------------+---------------+
+3 rows in set (0.00 sec)
+
+--------------
+--    b) jumlah catatan per jenis dan per organisasi
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT o.name AS organisasi, r.record_type AS jenis, COUNT(*) AS jumlah
+FROM organization_records r
+JOIN organizations o ON o.id = r.organization_id
+GROUP BY o.name, r.record_type
+ORDER BY o.name, jumlah DESC
+--------------
+
++-----------------------+----------+--------+
+| organisasi            | jenis    | jumlah |
++-----------------------+----------+--------+
+| Gapoktan Mekar Jaya   | activity |      1 |
+| Gapoktan Tani Makmur  | activity |      1 |
+| Gapoktan Tani Makmur  | task     |      1 |
+| Gapoktan Tani Makmur  | scan     |      1 |
+| Gapoktan Tani Makmur  | harvest  |      1 |
+| Koperasi Tani Harapan | activity |      1 |
+| Koperasi Tani Harapan | harvest  |      1 |
++-----------------------+----------+--------+
+7 rows in set (0.00 sec)
+
+--------------
+--    c) jumlah anggota per peran
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT m.role AS peran, COUNT(*) AS jumlah_anggota
+FROM organization_members m
+GROUP BY m.role
+ORDER BY jumlah_anggota DESC
+--------------
+
++-------------------+----------------+
+| peran             | jumlah_anggota |
++-------------------+----------------+
+| administrator     |              3 |
+| manager           |              2 |
+| farmer            |              2 |
+| extension_officer |              1 |
++-------------------+----------------+
+4 rows in set (0.00 sec)
+
+--------------
+--    d) (bonus) log aktivitas kategorinya per komoditas rata
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+--------------
+SELECT c.name AS komoditas, COUNT(r.id) AS jumlah_catatan,
+       ROUND(AVG(r.progress_percent), 1) AS rata_progres
+FROM organization_records r
+LEFT JOIN plots p ON p.id = r.plot_id
+JOIN commodities c ON c.id = p.commodity_id
+GROUP BY c.name
+ORDER BY rata_progres DESC
+--------------
+
++-----------+----------------+--------------+
+| komoditas | jumlah_catatan | rata_progres |
++-----------+----------------+--------------+
+| Padi      |              3 |        100.0 |
+| Jagung    |              1 |        100.0 |
+| Tomat     |              1 |        100.0 |
+| Cabai     |              1 |         60.0 |
+| Kopi      |              1 |         45.0 |
++-----------+----------------+--------------+
+5 rows in set (0.00 sec)
+
+Bye

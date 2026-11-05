@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>Tugas Personal 2 — Strategi Kompetitif dan Sistem Informasi (MAPAN)</title>
+<style>
+  :root{
+    --ink:#1c2416; --muted:#5b6553; --line:#d8dccb;
+    --accent:#2f5a1e; --accent-soft:#eef2e6; --paper:#ffffff;
+  }
+  @page{ size:A4; margin:20mm 16mm; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:"Segoe UI","Public Sans",Arial,sans-serif;
+    color:var(--ink); font-size:11pt; line-height:1.6; background:#e9eae4;
+  }
+  .sheet{ background:var(--paper); max-width:210mm; margin:0 auto; padding:20mm 16mm; }
+  .page-break{ page-break-after:always; }
+  h1,h2,h3{ font-family:Fraunces,Georgia,"Times New Roman",serif; line-height:1.3; }
+  h2{ font-size:16pt; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:6px; margin:24px 0 14px; }
+  h3{ font-size:12.5pt; margin:18px 0 8px; color:#24351a; }
+  p{ margin:7px 0; text-align:justify; }
+  ul,ol{ margin:6px 0 10px; padding-left:22px; }
+  li{ margin:3px 0; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0 16px; font-size:9.5pt; }
+  th,td{ border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
+  th{ background:var(--accent-soft); font-weight:700; }
+  code{ font-family:Consolas,"Courier New",monospace; font-size:9.2pt; background:#f3f4ee; padding:1px 4px; border-radius:3px; }
+  .fill{ background:#fff7d6; border-bottom:2px solid #c9a400; }
+  .shot{
+    border:2px dashed #b3b8a5;
+    background:repeating-linear-gradient(45deg,#f7f8f2,#f7f8f2 12px,#eff1e8 12px,#eff1e8 24px);
+    border-radius:8px; min-height:120px; display:grid; place-items:center; text-align:center;
+    color:#8b9080; font-size:9.5pt; padding:12px; margin:8px 0 14px;
+  }
+  .flow{ display:flex; flex-direction:column; gap:3px; margin:10px 0 16px; }
+  .fstep{ border:1.5px solid var(--accent); border-radius:8px; padding:7px 10px; background:var(--accent-soft); }
+  .fstep b{ color:#24351a; }
+  .fstep small{ color:var(--muted); display:block; }
+  .farrow{ text-align:center; color:var(--accent); font-size:13pt; line-height:1; }
+  .badge{ display:inline-block; padding:1px 8px; border-radius:10px; font-size:9pt; font-weight:700; color:#fff; }
+  .b-tinggi{ background:#a3342c; } .b-sedang{ background:#b58424; } .b-rendah{ background:#2f6a1e; }
+  .porter{ margin:10px 0 16px; }
+  .prow{ display:flex; gap:8px; }
+  .prow + .prow{ margin-top:8px; }
+  .pbox{ flex:1; border:1.5px solid var(--accent); border-radius:8px; padding:8px 10px; font-size:9.5pt; background:#fbfcf8; text-align:center; }
+  .pbox h4{ margin:0 0 4px; font-size:10pt; color:var(--accent); font-family:Fraunces,Georgia,serif; }
+  .pcenter{ background:var(--accent-soft); color:#24351a; padding:10px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px; }
+  .pcenter b{ font-size:12pt; }
+  .pcenter small{ font-weight:400; color:var(--muted); }
+  .cover{ display:flex; flex-direction:column; min-height:240mm; text-align:center; }
+  .cover img{ width:64mm; margin:8mm auto 4mm; display:block; }
+  .cover h1{ font-size:23pt; margin:6mm 0 3mm; color:var(--accent); }
+  .cover .sub{ font-size:12.5pt; color:var(--muted); }
+  .cover .id{ margin-top:auto; margin-bottom:6mm; font-size:11.5pt; line-height:2; }
+  .toc li{ margin:4px 0; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ============ COVER ============ -->
+<div class="cover page-break">
+  <div style="margin-top:14mm;font-size:12pt">Tugas Personal 2</div>
+  <div style="font-size:14pt;font-weight:700;color:#24351a">Strategi Kompetitif dan Sistem Informasi</div>
+  <img src="../laporan/assets/mapan-logo-full.png" alt="Logo MAPAN" />
+  <h1>MAPAN</h1>
+  <div class="sub">Manajemen &amp; Analisis Prediksi Agri Nusantara</div>
+  <div class="sub" style="font-size:10.5pt;margin-top:2mm">
+    Observasi bisnis saat ini · Porter Lima Kekuatan · Four Generic Strategies
+  </div>
+  <!-- ISI-Oleh-Mahasiswa -->
+  <div class="id">
+    <b>Nama:</b> <span class="fill">[ISI-Oleh-Mahasiswa: nama lengkap]</span><br/>
+    <b>NIM:</b> <span class="fill">[ISI-Oleh-Mahasiswa: NIM]</span><br/>
+    <b>Program Studi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: prodi]</span><br/>
+    <b>Institusi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: nama kampus]</span> · 2026
+  </div>
+</div>
+
+<!-- ============ TOC ============ -->
+<h2>Daftar Isi</h2>
+<ol class="toc">
+  <li><b>Bagian 1</b> — Observasi dan Dokumentasi Bisnis Saat Ini</li>
+  <li><b>Bagian 2</b> — Analisis Lima Kekuatan Kompetitif Porter</li>
+  <li><b>Bagian 3</b> — Pemilihan Four Generic Strategies</li>
+  <li>Lampiran — Rujukan bukti aktual proyek</li>
+</ol>
+<div class="page-break"></div>
+
+<!-- ============ BAGIAN 1 ============ -->
+<h2>Bagian 1 — Observasi dan Dokumentasi Bisnis Saat Ini</h2>
+
+<h3>1.1 Profil bisnis dan layanan</h3>
+<p>Bisnis/solusi yang dipilih, dilanjutkan dari Tugas Personal 1, adalah <b>MAPAN — Manajemen &amp;
+Analisis Prediksi Agri Nusantara</b>: aplikasi web untuk membantu organisasi pertanian
+(kelompok tani/gapoktan/koperasi) mengelola lahan, siklus tanam, catatan kerja harian, hingga
+laporan hasil panen.</p>
+<table>
+  <tr><th>Elemen</th><th>Isi</th></tr>
+  <tr><td>Jenis bisnis</td><td>Aplikasi web (agri-tech) untuk pengelolaan data pertanian</td></tr>
+  <tr><td>Layanan utama</td><td>Pencatatan lahan dan blok garapan, siklus tanam otomatis, catatan operasional (aktivitas, tugas, panen, pemantauan tanaman), dashboard KPI, cuaca, perkiraan hasil panen, ekspor laporan CSV, kesehatan lahan dan komunitas</td></tr>
+  <tr><td>Target pengguna</td><td>Organisasi tani kecil-menengah multi-komoditas: tanaman pangan, hortikultura, perkebunan</td></tr>
+  <tr><td>Cara akses</td><td>Daftar mandiri (#daftar) atau undangan admin; opsi dashboard demo berlabel data contoh</td></tr>
+  <tr><td>Hak akses</td><td>4 peran: Administrator, Manajer lapangan, Petani, Penyuluh (baca saja)</td></tr>
+</table>
+
+<h3>1.2 Diagram proses bisnis berjalan (as-is)</h3>
+<p>Proses ini menggambarkan keseharian organisasi tani (pelanggan MAPAN) <b>sebelum terbantu
+aplikasi</b>, dari masukan sampai hasil yang diterima:</p>
+<div class="flow">
+  <div class="fstep"><b>Masukan</b> — musim tanam dimulai: komoditas ditentukan KPL/gapoktan, lahan dibagi jadi blok garapan.</div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>1. Perencanaan musim</b><small>Diputus di rapat; hasilnya hanya tertulis di buku tulis kelompok (informasi tertutup). <span class="fill">[ISI-Oleh-Mahasiswa: sesuaikan dengan observasi kamu]</span></small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>2. Pembagian blok dan tanam</b><small>Batas blok ada di peta kertas / kesepakatan lisan; tidak digital.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>3. Pemeliharaan harian</b><small>Penyiraman, pupuk, pengendalian hama — progres diketahui lewat laporan lisan ke KPL; tidak tersimpan rapi.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>4. Pencatatan operasional</b><small>Buku tulis: upah, jam kerja, saprotan. WhatsApp: laporan harian + foto, mudah tenggelam di riwayat chat. Excel (kadang ada): dipakai satu orang saja.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>5. Pelaporan</b><small>KPL merangkum manual untuk penyuluh/dinas; data sering diminta ulang karena tak tersimpan.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>Keluaran yang diterima klien</b> — laporan rangkuman manual (berkala), riwayat chat yang menumpuk, keputusan musim berikutnya tanpa dasar data.</div>
+</div>
+
+<h3>1.3 Cara bisnis mencatat dan mengelola data saat ini</h3>
+<table>
+  <tr><th>Alat</th><th>Dipakai untuk</th><th>Kelemahan yang teramati</th></tr>
+  <tr><td>Buku tulis kelompok</td><td>Catatan rapat, pembagian blok, daftar kehadiran</td><td>Tersimpan di satu orang; tak bisa dibaca bersama; mudah rusak/hilang; tak bisa dicari</td></tr>
+  <tr><td>WhatsApp (grup)</td><td>Laporan harian, foto lapangan, koordinasi</td><td>Pesan lama tertimbun pesan baru; tidak terstruktur; tidak bisa diolah jadi statistik</td></tr>
+  <tr><td>Excel / Google Sheets (kadang)</td><td>Log keuangan/saprotan sederhana</td><td>Versi file tak terawat; hanya dipakai satu orang; tanpa kolaborasi multiuser</td></tr>
+  <tr><td>Ingatan KPL</td><td>Progres tanaman dan riwayat musim</td><td>Hilang saat orangnya pindah; tidak auditable</td></tr>
+</table>
+
+<h3>1.4 Masalah dan peluang yang ditemukan</h3>
+<ol>
+  <li><b>Masalah: data tersebar.</b> Data yang sama tersimpan di 3–4 tempat (buku, WhatsApp, Excel, ingatan) dan tidak sinkron.</li>
+  <li><b>Masalah: KPI tidak terukur.</b> Organisasi tidak bisa menghitung biaya per blok, produktivitas per petani, atau keberhasilan musim.</li>
+  <li><b>Masalah: ketergantungan satu orang.</b> Sistem berdiri di kepala KPL; bila dia tidak hadir, laporan macet.</li>
+  <li><b>Peluang: kebiasaan digital sudah ada.</b> Semua anggota sudah terbiasa WhatsApp, jadi hambatan adopsi aplikasi web rendah.</li>
+  <li><b>Peluang: riwayat yang tertata.</b> Data yang disimpan memungkinkan analitik (KPI per musim, cuaca vs hasil) yang tak dimiliki cara lama.</li>
+</ol>
+<div class="page-break"></div>
+
+<h3>1.5 Dokumentasi pendukung</h3>
+<p>Diisi bukti dari observasi/wawancara Tugas 1 kamu:</p>
+<div class="shot">[Foto: buku catatan kelompok — halaman pembagian blok lahan]</div>
+<div class="shot">[Tangkap layar: grup WhatsApp — laporan harian dan foto lapangan]</div>
+<div class="shot">[Tangkap layar: file Excel kelompok, bila ada]</div>
+<div class="shot">[Ringkasan wawancara: nama narasumber, tanggal, 3 keluhan utama soal pencatatan]</div>
+<div class="page-break"></div>
+
+<!-- ============ BAGIAN 2 ============ -->
+<h2>Bagian 2 — Analisis Lima Kekuatan Kompetitif Porter</h2>
+
+<div class="porter">
+  <div class="prow">
+    <div class="pbox"><h4>Pesaing Baru</h4><span class="badge b-sedang">ANCAMAN: SEDANG</span></div>
+    <div class="pbox pcenter" style="flex:1.3">
+      <img src="../laporan/assets/mapan-logo-full.png" style="width:30mm;display:block;margin:0 auto" alt="" />
+      <b>MAPAN</b>
+      <small>Ruang kerja digital untuk kelompok tani kecil-menengah multi-komoditas</small>
+    </div>
+    <div class="pbox"><h4>Produk Substitusi</h4><span class="badge b-tinggi">ANCAMAN: TINGGI</span></div>
+  </div>
+  <div class="prow">
+    <div class="pbox"><h4>Pemasok</h4><span class="badge b-rendah">ANCAMAN: RENDAH</span></div>
+    <div class="pbox"><h4>Pelanggan</h4><span class="badge b-tinggi">ANCAMAN: TINGGI</span></div>
+  </div>
+  <div class="prow">
+    <div class="pbox"><h4>Pesaing Tradisional</h4><span class="badge b-tinggi">ANCAMAN: TINGGI</span></div>
+  </div>
+</div>
+<p><i>Keterangan: logo di tengah = MAPAN; empat kotak lain = kekuatan yang menekan dari kelima sisi.</i></p>
+
+<h3>2.1 Pesaing tradisional (traditional competitors)</h3>
+<table>
+  <tr><th>Pesaing</th><th>Kondisi</th><th>Kekuatan mereka</th></tr>
+  <tr><td><b>Grup WhatsApp + buku catatan</b> — pesaing paling nyata, meski bukan software</td><td>Gratis, terbiasa dipakai semua anggota, tetap jalan tanpa internet stabil</td><td>Biaya nol dan kebiasaan; pindah ke aplikasi baru butuh alasan kuat</td></tr>
+  <tr><td><b>Excel / Google Sheets</b></td><td>Dipakai sekali pakai oleh 1–2 pengurus yang mahir komputer</td><td>Fleksibel, mudah dibagikan lewat file; tapi tidak multiuser dan mudah lupa disimpan</td></tr>
+  <tr><td><b>Aplikasi agri-tech nasional</b> (contoh: Tania, TaniHub, AgriAku dan sejenisnya)</td><td>Perusahaan berskala, umumnya fokus marketplace/rantai pasok</td><td>Skala, dana, dan pemasaran kuat; manajemen detail blok lahan kecil jarang jadi fokus</td></tr>
+  <tr><td><b>Perangkat pemerintah</b> (Kartu Tani, SIAP, dashboard dinas daerah)</td><td>Gratis, terhubung ke data dinas untuk pelaporan</td><td>Baik untuk monitoring dinas, tapi bukan alat kerja harian kelompok; pengisian masih manual</td></tr>
+</table>
+<p><b>Kesimpulan 2.1 — ancaman TINGGI.</b> Pesaing terdekat MAPAN bukan aplikasi serupa, melainkan
+kebiasaan "tidak pakai aplikasi". Nilai yang ditawarkan harus berupa hal yang buku dan WhatsApp tidak
+bisa beri: KPI terukur, peta blok, laporan siap cetak, riwayat musiman.</p>
+
+<h3>2.2 Pesaing baru (new market entrants)</h3>
+<table>
+  <tr><th>Calon pemain</th><th>Deskripsi</th><th>Tingkat potensi masuk</th></tr>
+  <tr><td>Startup agri-tech baru</td><td>Bermodal investasi, menargetkan kelompok tani dengan fitur serupa</td><td>SEDANG — mudah meniru fitur, sulit meniru pemahaman domain + migrasi data</td></tr>
+  <tr><td>Platform besar yang menambah modul manajemen lahan</td><td>Sudah punya pengguna dan pasar; kekuatannya di ecommerce/fintech</td><td>SEDANG — fokus mereka bukan operasional harian kelompok kecil</td></tr>
+  <tr><td>Vendor pemerintah / BUMN</td><td>Masuk lewat proyek digitalisasi dinas/provinsi</td><td>RENDAH–SEDANG — geraknya lambat dan tidak fokus ke kelompok kecil</td></tr>
+</table>
+<p><b>Hambatan masuk yang melindungi MAPAN</b>: pemahaman domain pertanian, data historis yang mulai
+berkumpul di aplikasi, dan rancangan multi-tenant + isolasi data yang sudah teruji (22 tabel, uji T17 lulus).</p>
+
+<h3>2.3 Substitusi (substitute products and services)</h3>
+<table>
+  <tr><th>Substitusi</th><th>Deskripsi</th><th>Ancaman</th></tr>
+  <tr><td><b>Cara lama tanpa aplikasi</b></td><td>Buku, WhatsApp, Excel, ingatan</td><td><span class="badge b-tinggi">TINGGI</span> — biaya nol; status quo paling mudah dipilih</td></tr>
+  <tr><td>Jasa penyuluh + kartu catatan dinas</td><td>Gratis, tetapi hanya hadir berkala</td><td><span class="badge b-sedang">SEDANG</span></td></tr>
+  <tr><td>ERP/CRM generik atau aplikasi no-code DIY</td><td>Butuh orang IT internal untuk menyesuaikan</td><td><span class="badge b-rendah">RENDAH</span> — jarang ada di kelompok tani</td></tr>
+</table>
+<p><b>Kesimpulan 2.3 — ancaman TINGGI.</b> "Tidak memakai apa pun" selalu tersedia sebagai pilihan
+alternatif. Menahan substitusi tidak bisa lewat harga; caranya: nilai harus tampil cepat (sudah terasa
+di musim pertama) dan penyimpanan informasi organisasi harus benar-benar lebih baik daripada buku dan chat.</p>
+
+<h3>2.4 Pelanggan (customers — posisi tawar)</h3>
+<ul>
+  <li><b>Kekuatan tawar tinggi.</b> Kelompok tani masih punya pilihan "tidak pakai aplikasi"; biaya
+      pindah rendah; mereka sangat sensitif pada harga — sehingga sisi nilai harus selalu dijelaskan.</li>
+  <li><b>Keputusan terpusat.</b> Satu KPL/gapoktan mengambil keputusan untuk seluruh anggota; satu
+      keputusan itu menentukan banyak orang, karena itu bukti nilai dan kepercayaan menjadi sangat penting.</li>
+  <li><b>Mitigasi.</b> Nilai harus tampil <b>sebelum</b> komitmen: demo YouTube, dashboard demo berlabel
+      "data contoh", onboarding mudah. Sebaliknya, setelah data peta, KPI, dan riwayat musiman tersimpan
+      di aplikasi, berpindah menjadi semakin sulit — switching cost yang tumbuh secara alami.</li>
+</ul>
+
+<h3>2.5 Pemasok (suppliers — posisi tawar)</h3>
+<ul>
+  <li><b>Infrastruktur cloud</b> (Vercel/Railway/hosting MySQL): banyak alternatif; biaya kecil pada skala
+      ini; pindah memerlukan kerja sedang, bukan terpaksa → <b>ancaman RENDAH</b>.</li>
+  <li><b>Data eksternal</b> (Open-Meteo untuk cuaca; data resmi BPS): sumber gratis dan terbuka, ada
+      alternatif BMKG dan data terbuka lain → <b>ancaman RENDAH</b>.</li>
+  <li><b>Tenaga pengembang &amp; alat AI</b>: pengembangan berbantuan AI menekan ketergantungan pada satu
+      orang; jalur verifikasi (test suite, CI) menjaga kualitas tetap terkontrol.</li>
+  <li><b>Risiko kecil yang dicatat</b>: data koordinat wilayah perlu dikelola baik agar fitur cuaca akurat;
+      backup rutin sudah disiapkan berupa dump SQL (<code>npm run db:dump</code>).</li>
+</ul>
+
+<h3>2.6 Matriks ringkasan ancaman</h3>
+<table>
+  <tr><th>Kekuatan</th><th>Tingkat ancaman</th><th>Faktor kunci</th><th>Dampak jika tidak disiasati</th></tr>
+  <tr><td>Pesaing tradisional</td><td>TINGGI</td><td>Cara lama gratis dan terbiasa</td><td>Adopsi lambat; nilai tidak tersampaikan</td></tr>
+  <tr><td>Pesaing baru</td><td>SEDANG</td><td>Startup dan modul agri-tech besar</td><td>Pesaing langsung di segmen kelompok tani</td></tr>
+  <tr><td>Substitusi</td><td>TINGGI</td><td>Buku + WhatsApp + Excel + ingatan</td><td>Pengguna berhenti memakai saat musim sibuk</td></tr>
+  <tr><td>Pelanggan</td><td>TINGGI</td><td>Biaya pindah rendah; keputusan di tangan KPL</td><td>Drop-off pengguna; adopsi tidak berkembang</td></tr>
+  <tr><td>Pemasok</td><td>RENDAH</td><td>Cloud + data terbuka; banyak opsi</td><td>Biaya infrastruktur naik adalah risiko kecil</td></tr>
+</table>
+<p><b>Insight strategis</b>: empat dari lima kekuatan berancaman tinggi-sedang. Strategi terbaik bukan lomba
+harga (substitusinya gratis), melainkan <b>menaikkan biaya pindah dengan nilai</b> (peta, KPI, riwayat) dan
+<b>memfokuskan energi ke segmen kelompok tani</b>. Pembahasannya ada di Bagian 3.</p>
+
+<!-- ============ BAGIAN 3 ============ -->
+<div class="page-break"></div>
+<h2>Bagian 3 — Pemilihan Four Generic Strategies</h2>
+
+<h3>3.1 Dua strategi yang dipilih</h3>
+<table>
+  <tr><th>Strategi</th><th>Peran</th><th>Realisasi di MAPAN</th></tr>
+  <tr>
+    <td><b>Focus on market niche</b></td>
+    <td><b>Strategi utama</b> — menentukan siapa yang dilayani</td>
+    <td>Fokus ke <b>kelompok tani / gapoktan / koperasi kecil-menengah multi-komoditas</b> (tanaman
+        pangan, hortikultura, perkebunan). Aplikasi memang dirancang per organisasi (multi-tenant),
+        tetap ringan dipakai (12 menu dashboard), berbahasa Indonesia, dan ada undangan anggota
+        dengan 4 peran akses.</td>
+  </tr>
+  <tr>
+    <td><b>Strengthen customer and supplier intimacy</b></td>
+    <td><b>Strategi penguat</b> — menahan ancaman tinggi dari Porter</td>
+    <td><b>Pelanggan:</b> dashboard KPI dari data nyata, catatan bersama, ekspor CSV satu klik,
+        kartu "Langkah awal" untuk akun baru. <b>Pemasok/data:</b> cuaca Open-Meteo via koordinat
+        region, benchmark komoditas dengan sumber yang jelas, data BPS di halaman Tentang.</td>
+  </tr>
+</table>
+
+<h3>3.2 Alasan pemilihan — terhubung ke hasil analisis Porter</h3>
+<p>Hasil Bagian 2: <b>empat dari lima kekuatan berancaman tinggi-sedang</b>, hanya pemasok yang rendah.
+Dua strategi di atas dipilih karena masing-masing menutup masalah tertentu secara langsung:</p>
+
+<div class="flow">
+  <div class="fstep"><b>Masalah Porter 2.1 &amp; 2.3</b>
+    <small>Pesaing yang paling dekat adalah cara lama yang gratis (buku + WhatsApp). Lomba harga tidak ada artinya.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>Respons: Focus on market niche</b>
+    <small>MAPAN tidak bersaing melawan TaniHub dan tidak menyaingi rutinitas WhatsApp. Sebaliknya:
+    melayani khusus kelompok tani yang butuh <b>manajemen blok dan laporan</b> — nilai yang
+    cara lama tidak bisa beri (KPI terukur, peta blok, riwayat musiman).</small></div>
+</div>
+
+<div class="flow">
+  <div class="fstep"><b>Masalah Porter 2.4</b>
+    <small>Pelanggan mudah berpindah; keputusan di tangan satu KPL; sensitif harga.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>Respons: Customer intimacy</b>
+    <small>Data organisasi (peta, KPI, riwayat musim) berkumpul dan tumbuh di aplikasi — <b>biaya pindah
+    naik secara alami</b>. Nilai dibuat tampil dulu lewat demo, sehingga komitmen tidak diambil buta-buta.</small></div>
+</div>
+
+<div class="flow">
+  <div class="fstep"><b>Masalah Porter 2.5 dan risiko data</b>
+    <small>Pemasok cuaca/data harga dapat diganti kapanpun; data internal harus aman.</small></div>
+  <div class="farrow">▼</div>
+  <div class="fstep"><b>Respons: Supplier intimacy</b>
+    <small>Sumber eksternal dikelola dengan sumber yang jelas (BPS, Open-Meteo, benchmark) dan dicatat
+    di dokumentasi; di sisi pemasok internal: dump SQL rutin + isolasi data antar organisasi.</small></div>
+</div>
+<p><small>Keterangan: diagram alur di atas menunjukkan hubungan sebab-akibat antara hasil analisis Porter
+dan strategi generik yang dipilih.</small></p>
+
+<h3>3.3 Masalah yang ingin diselesaikan dan manfaat yang diharapkan</h3>
+<table>
+  <tr><th>Masalah (Bagian 1)</th><th>Strategi yang menutup</th><th>Manfaat / ukuran keberhasilan</th></tr>
+  <tr><td>Data tersebar di buku + WhatsApp + Excel + ingatan</td><td>Customer intimacy</td><td>Seluruh catatan harian masuk database tunggal; riwayat tepercaya; KPI = angka nyata</td></tr>
+  <tr><td>Pelaporan ke penyuluh/dinas memakan waktu</td><td>Customer intimacy</td><td>Laporan CSV bisa diunduh langsung dari dashboard; KPL tidak menulis ulang manual</td></tr>
+  <tr><td>Anggota tidak punya akses informasi</td><td>Customer intimacy</td><td>4 peran akses (admin/manajer/petani/penyuluh); informasi sampai ke pengguna yang tepat</td></tr>
+  <tr><td>Aplikasi agri-tech umum terlalu kompleks untuk kelompok kecil</td><td>Focus niche</td><td>Navigasi sederhana, istilah Indonesia, tidak menakutkan bagi pengguna baru</td></tr>
+  <tr><td>Risiko pesaing baru yang agresif pemasaran</td><td>Focus niche + biaya pindah</td><td>Data musiman terakumulasi; migrasi tidak mudah; pengguna bertahan</td></tr>
+</table>
+
+<h3>3.4 Kenapa dua strategi lainnya TIDAK dipilih</h3>
+<ul>
+  <li><b>Low-cost leadership — tidak dipilih.</b> Di segmen ini pembanding utama adalah alat gratis
+      (WhatsApp/buku). Bersaing dengan harga tidak berlaku; MAPAN fokus pada <i>nilai</i>
+      (data yang terstruktur + laporan instan), bukan harga termurah.</li>
+  <li><b>Product differentiation — bukan strategi utama.</b> Secara fitur, MAPAN memang punya
+      banyak keunikan (multi-tenant, peta blok POLYGON, benchmark). Tapi di segmen ini keunikan hanya
+      berharga <b>bila membantu pekerjaan nyata kelompok tani</b>; oleh karena itu keunikan diperlakukan
+      sebagai alat dari strategi fokus-niche dan intimacy, bukan slogan pemasaran.</li>
+</ul>
+
+<h3>3.5 Kesimpulan</h3>
+<p>Menggabungkan observasi (Bagian 1) dan analisis Porter (Bagian 2), MAPAN memilih dua strategi:
+<b>focus on market niche</b> dan <b>strengthen customer &amp; supplier intimacy</b>. Keduanya menjawab
+dua ancaman terbesar — substitusi gratis dan pelanggan yang mudah pindah — dengan satu prinsip:
+<b>memberi nilai layanan yang nyata</b> ke kelompok tani, lalu membiarkan data organisasi tumbuh dan
+tersimpan di aplikasi. Strategi ini sudah tereksekusi di aplikasi — bukan hanya di atas kertas:
+33 halaman/mode, 22 tabel data, isolasi data antar organisasi, 4 peran akses, dan 31+5+33 pengujian
+otomatis yang semua lulus.</p>
+
+<div class="page-break"></div>
+
+<!-- ============ LAMPIRAN ============ -->
+<h2>Lampiran — Rujukan bukti aktual proyek</h2>
+<table>
+  <tr><th>Bukti</th><th>Lokasi di repo</th></tr>
+  <tr><td>Fitur inti (KPI, catatan operasional, cuaca, benchmark, ekspor CSV)</td><td><code>src/features/dashboard/</code>, <code>server/src/routes/</code></td></tr>
+  <tr><td>Hak akses 4 peran; isolasi antar organisasi (uji T17/T19/T21 lulus)</td><td><code>server/test/api.test.js</code>, <code>docs/hasil-pengujian-api.md</code></td></tr>
+  <tr><td>Skema multi-tenant (22 tabel, migrasi idempotent)</td><td><code>db/migrations/</code>, <code>docs/database/</code></td></tr>
+  <tr><td>Data eksternal bersumber jelas (Open-Meteo, data resmi BPS)</td><td><code>server/src/services/</code>, halaman <code>#tentang-data</code></td></tr>
+  <tr><td>Hasil pengujian otomatis (31 API + 5 unit + 33 smoke)</td><td><code>docs/hasil-pengujian-api.md</code></td></tr>
+  <tr><td>Backup database untuk kesinambungan</td><td><code>deliverables/mapan-db-dump.sql</code> (via <code>npm run db:dump</code>)</td></tr>
+  <tr><td>Materi demo untuk penilaian</td><td><code>docs/skenario-demo.md</code>, <code>docs/akun-demo.md</code></td></tr>
+</table>
+<p style="color:var(--muted);font-size:9pt;margin-top:10px">Dokumen ini disusun dengan bantuan AI coding tool
+(<i>vibe coding</i>) lalu diverifikasi manual. Bagian berlabel <span class="fill">[ISI-Oleh-Mahasiswa]</span>
+diisi dari data observasi/wawancara Tugas 1.</p>
+
+</div><!-- /sheet -->
+</body>
+</html>

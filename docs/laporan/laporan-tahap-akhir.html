@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>Laporan Tahap Akhir — Aplikasi MAPAN</title>
+<style>
+  :root{
+    --ink:#1c2416; --muted:#5b6553; --line:#d8dccb;
+    --accent:#2f5a1e; --accent-soft:#eef2e6; --paper:#ffffff;
+  }
+  @page{ size:A4; margin:22mm 18mm; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:"Segoe UI","Public Sans",Arial,sans-serif;
+    color:var(--ink); font-size:11.5pt; line-height:1.6; background:#e9eae4;
+  }
+  .sheet{
+    background:var(--paper); max-width:210mm; margin:0 auto; padding:22mm 18mm;
+  }
+  .page-break{ page-break-after:always; }
+  h1,h2,h3,h4{ font-family:Fraunces,Georgia,"Times New Roman",serif; line-height:1.25; }
+  h2{ font-size:17pt; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:6px; margin:26px 0 14px; }
+  h3{ font-size:13pt; margin:20px 0 8px; color:#24351a; }
+  h4{ font-size:11.5pt; margin:14px 0 6px; }
+  p{ margin:8px 0; text-align:justify; }
+  ul,ol{ margin:6px 0 10px; padding-left:22px; }
+  li{ margin:3px 0; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0 16px; font-size:9.5pt; }
+  th,td{ border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
+  th{ background:var(--accent-soft); font-weight:700; }
+  code{ font-family:Consolas,"Courier New",monospace; font-size:9.2pt; background:#f3f4ee; padding:1px 4px; border-radius:3px; }
+  pre{ background:#f6f7f1; border:1px solid var(--line); padding:10px 12px; overflow-x:auto; font-size:9pt; line-height:1.45; }
+  pre code{ background:none; padding:0; }
+  .lulus{ color:#2f6a1e; font-weight:700; }
+  .warn{ color:#9a6b00; }
+  /* Placeholder screenshot */
+  .shot{
+    border:2px dashed #b3b8a5; background:repeating-linear-gradient(45deg,#f7f8f2,#f7f8f2 12px,#eff1e8 12px,#eff1e8 24px);
+    border-radius:8px; min-height:150px; display:grid; place-items:center; text-align:center;
+    color:#8b9080; font-size:9.5pt; padding:14px; margin:10px 0 16px;
+  }
+  .fill{ background:#fff7d6; border-bottom:2px solid #c9a400; }
+  /* Cover */
+  .cover{ display:flex; flex-direction:column; min-height:235mm; text-align:center; }
+  .cover .top{ margin-top:20mm; font-size:13pt; }
+  .cover img{ width:78mm; margin:14mm auto 6mm; display:block; }
+  .cover h1{ font-size:26pt; margin:8mm 0 4mm; color:var(--accent); }
+  .cover .sub{ font-size:14pt; color:var(--muted); }
+  .cover .id{ margin-top:auto; margin-bottom:8mm; font-size:12pt; line-height:2; }
+  .cover .id b{ font-weight:700; }
+  .toc li{ margin:5px 0; }
+  .nowrap{ white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ================= COVER ================= -->
+<div class="cover page-break">
+  <div class="top">Tugas Besar — Pengembangan Perangkat Lunak (Tahap Akhir)<br/>
+    <span style="font-size:11pt;color:var(--muted)">Prototype dikembangkan menjadi aplikasi lengkap dengan pendekatan <i>vibe coding</i> (berbantuan AI)</span>
+  </div>
+  <img src="assets/mapan-logo-full.png" alt="Logo MAPAN" />
+  <h1>APLIKASI MAPAN</h1>
+  <div class="sub">Manajemen &amp; Analisis Prediksi Agri Nusantara</div>
+  <div class="sub" style="font-size:11pt;margin-top:2mm">
+    Aplikasi web multi-tenant untuk manajemen lahan/petak, siklus tanam,<br/>
+    catatan operasional, laporan &amp; ekspor CSV, cuaca, dan perkiraan hasil panen
+  </div>
+  <!-- ISI-Oleh-Mahasiswa: identitas -->
+  <div class="id">
+    <b>Judul Laporan:</b> Dokumentasi Pengembangan Program &amp; Hasil Pengujian<br/>
+    <b>Nama:</b> <span class="fill">[ISI-Oleh-Mahasiswa: nama lengkap]</span> &nbsp;&nbsp;
+    <b>NIM:</b> <span class="fill">[ISI-Oleh-Mahasiswa: NIM]</span><br/>
+    <b>Program Studi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: prodi]</span><br/>
+    <b>Institusi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: nama kampus]</span><br/>
+    <b>Tahun:</b> 2026
+  </div>
+</div>
+
+<!-- ================= TOC ================= -->
+<h2>Daftar Isi</h2>
+<ol class="toc">
+  <li>Pendahuluan</li>
+  <li>Metode Pengembangan (Vibe Coding)</li>
+  <li>Arsitektur &amp; Teknologi</li>
+  <li>Rancangan Basis Data</li>
+  <li>Dokumentasi Pengembangan Program</li>
+  <li>Hak Akses Pengguna</li>
+  <li>Validasi dan Hasil Pengujian</li>
+  <li>Tampilan Aplikasi</li>
+  <li>Demo (Tautan YouTube)</li>
+  <li>Kesimpulan &amp; Rencana Pengembangan</li>
+  <li>Lampiran (kamus data, struktur DB, contoh CSV, panduan menjalankan)</li>
+</ol>
+<div class="page-break"></div>
+
+<!-- ================= 1 PENDAHULUAN ================= -->
+<h2>1. Pendahuluan</h2>
+<h3>1.1 Latar belakang</h3>
+<p>Pertanian kecil di Indonesia masih kerap dicatat secara manual: lahan, siklus tanam, aktivitas harian,
+dan hasil panen tersebar di buku catatan atau percakapan. MAPAN (Manajemen &amp; Analisis Prediksi Agri
+Nusantara) diberi rancangan proposal sebagai platform digital yang membantu petani, kelompok tani,
+penyuluh, dan koperasi mengelola informasi itu dalam satu ruang kerja.</p>
+<h3>1.2 Tahapan tugas</h3>
+<table>
+  <tr><th>Tahap</th><th>Yang dilakukan</th><th>Output</th></tr>
+  <tr><td>Rancangan</td><td>Proposal, rencana v1, desain basis data (ERD, kamus data, normalisasi 1NF–3NF)</td><td><code>docs/plans/aplikasi-mapan-v1.md</code>, <code>docs/database/</code></td></tr>
+  <tr><td>Prototype</td><td>Frontend (landing, auth, dashboard) + skema database awal</td><td>Source code (proto)</td></tr>
+  <tr><td>Revisi besar</td><td>Pendaftaran mandiri, CRUD penuh, hak akses 4 peran, undangan, media</td><td>Migrasi 001–008, 10 jalur route API</td></tr>
+  <tr><td><b>Tahap akhir</b></td><td>Penyempurnaan fitur, pengamanan, otomatisasi pengujian, dokumentasi laporan</td><td><code>server/test/api.test.js</code> (31 skenario), smoke render 33 halaman, laporan ini</td></tr>
+</table>
+<h3>1.3 Ruang lingkup fitur</h3>
+<ul>
+  <li>Pendaftaran mandiri akun + organisasi (multi-tenant), undangan anggota, tema terang/gelap.</li>
+  <li>Manajemen lahan/petak (GeoJSON batas peta), siklus tanam otomatis, catatan operasional terstruktur
+      (aktivitas, tugas, panen, scan tanaman) + unggah foto berbatas 10 MB.</li>
+  <li>Dashboard KPI dari data nyata, cuaca Open-Meteo, perkiraan hasil panen <b>benchmark komoditas</b>
+      (diterangkan jujur: bukan AI/ML — lihat 10.2), laporan + ekspor CSV.</li>
+  <li>Hak akses 4 peran + penyuluh (baca saja kondisional) dan isolasi antar-organisasi.</li>
+</ul>
+<div class="page-break"></div>
+
+<!-- ================= 2 METODE ================= -->
+<h2>2. Metode Pengembangan (Vibe Coding)</h2>
+<h3>2.1 Pendekatan</h3>
+<p>Pengembangan tahap akhir memakai pendekatan <i>vibe coding</i>: mahasiswa memandu
+perangkat lunak dengan AI coding tool melalui arah permintaan (prompt dokumen, daftar revisi,
+definisi selesai), sedangkan kode ditulis/direvisi bersama AI. Karena hasil AI tidak boleh
+dipercaya buta, setiap keluaran diverifikasi manusia melewati jalur yang sulit dipalsu.</p>
+<h3>2.2 Tools yang dipakai</h3>
+<table>
+  <tr><th>Peran</th><th>Tool</th><th>Keterangan</th></tr>
+  <tr><td>AI coding assistant</td><td><span class="fill">[ISI-Oleh-Mahasiswa: misal OpenCode + Claude/GLM, ChatGPT, Copilot]</span></td><td>Menulis kode, revisi, dokumentasi, test</td></tr>
+  <tr><td>Editor/IDE</td><td>VS Code / lainnya <span class="fill">[sesuaikan]</span></td><td>Integrasi extension AI</td></tr>
+  <tr><td>Runtime &amp; VCS</td><td>Node.js 22, npm, Git</td><td>Objek bangunan dan riwayat versi</td></tr>
+</table>
+<h3>2.3 Cara verifikasi (agar hasil AI melekat pada kebenaran)</h3>
+<ol>
+  <li><b>Uji otomatis</b>: 31 skenario API end-to-end pada MySQL 8 sungguhan, 5 uji unit klien,
+      33 halaman smoke-render — setiap perubahan wajib hijau (<code>npm test</code>, <code>npm run check</code>).</li>
+  <li><b>CI GitHub Actions</b>: build frontend + uji integrasi (database service MySQL) per push.</li>
+  <li><b>Revisi bergradasi dokumen</b>: <code>docs/REVISI-PROMPT.md</code> (daftar revisi),
+      <code>docs/CATATAN-REVISI.md</code> (apa yang diubah + bukti dari run nyata).</li>
+  <li><b>Sifat jujur wajib</b>: semua batasan (WAD "prediksi AI", data demo, hal yang belum diuji)
+      dicatat eksplisit, tidak dapat dihaluskan (<code>docs/CATATAN-REVISI.md</code>, bagian “Belum dibuktikan”).</li>
+  <li><b>Ulasan fitur manual</b>: skenario tampilan diperiksa di browser sungguhan
+      (checklist 7.4 + tangkapan layar pada Bab 8).</li>
+</ol>
+<div class="page-break"></div>
+
+<!-- ================= 3 ARSITEKTUR ================= -->
+<h2>3. Arsitektur &amp; Teknologi</h2>
+<pre>
+  Browser (klien)
+    │  #hash-routing SPA
+    ├─ React 19 + Vite 8  ·  Radix UI  ·  Recharts (grafik)  ·  Lucide (ikon)
+    │       landing · tentang (data BPS) · auth · dashboard 12 menu
+    │  REST fetch + cookie sesi HttpOnly
+    ▼
+  API Server :4000
+    ├─ Node.js 22 + Express 5
+    ├─ Route: auth · organizations · plots · records · media · weather
+    │         predictions · account · reference · health
+    ├─ Validasi &amp; rate-limit per-route, prepared statements (mysql2)
+    ▼
+  MySQL 8.0 (InnoDB, utf8mb4, SPATIAL index)
+    └─ 22 tabel, sesi = hash di DB, media di volume + metadata di tabel
+</pre>
+<h3>3.1 Karakteristik penting</h3>
+<ul>
+  <li><b>Hash routing</b> agar aman di hosting statis (Vercel) tanpa rewrite khusus.</li>
+  <li><b>Multi-tenant</b>: tabel transaksional mengandung <code>organization_id</code>;
+      isolasi ditegakkan di lapisan aplikasi dan dites (T17).</li>
+  <li><b>Sesi</b>: cookie HttpOnly; token sesi disimpan sebagai SHA-256 di <code>user_sessions</code>,
+      sehingga kebocoran DB tidak langsung membagi sesi.</li>
+  <li><b>Batas peta terstruktur</b>: batas lahan disimpan sebagai POLYGON (SRID 4326) di <code>plot_boundaries</code> dengan SPATIAL index.</li>
+</ul>
+<h3>3.2 Deviasi rancangan awal → implementasi (keputusan teknis tersurat)</h3>
+<table>
+  <tr><th>Aspek</th><th>Rancangan awal</th><th>Implementasi</th><th>Alasan</th></tr>
+  <tr><td>Database</td><td>PostgreSQL + PostGIS</td><td>MySQL 8 (POLYGON SRID 4326)</td><td>Keputusan pemilik proyek; konsekuensi terekam <code>docs/database/README.md</code> §3.1</td></tr>
+  <tr><td>Backend</td><td>Python FastAPI + Celery</td><td>Node.js 22 + Express 5</td><td>Sederhana dan cukup untuk cakupan tugas; tugas latar digantikan operasi on-demand</td></tr>
+  <tr><td>Klien</td><td>Mobile Flutter + SQLite offline</td><td>Web app responsif (React)</td><td>Fitur offline belum dibangun; <code>sync_events</code>/<code>client_event_id</code> tetap disiapkan di skema</td></tr>
+  <tr><td>Prediksi</td><td>Formula + scrapping cuaca</td><td>Benchmark komoditas</td><td>Disederuhkan, sumber tetap terbuka &amp; jujur dilaporkan</td></tr>
+  <tr><td>Sesi auth</td><td>JWT</td><td>Cookie HttpOnly + hash sesi di MySQL</td><td>Lebih aman dari XSS token luput</td></tr>
+  <tr><td>Push FCM</td><td>Firebase</td><td>Tidak ada</td><td>Out-of-scope tahap ini, dicatat sebagai future work (Bab 10)</td></tr>
+</table>
+<div class="page-break"></div>
+
+<!-- ================= 4 DATABASE ================= -->
+<h2>4. Rancangan Basis Data</h2>
+<h3>4.1 Ringkasan</h3>
+<p>Skema final berisi <b>22 tabel</b> (termasuk <code>schema_migrations</code>) yang dibangun lewat
+8 migrasi berurutan &amp; idempotent. Rancangan menindaklanjuti 4 lapis dati desain asli
+(Inti, Operasional, Sosial, Data resmi); detail ERD, kamus data, dan normalisasi 1NF–3NF
+terlampir di repo (<code>docs/database/01–05</code>) dan diringkas di Lampiran A.</p>
+<h3>4.2 Daftar migrasi</h3>
+<table>
+  <tr><th>Migration</th><th>Isi</th></tr>
+  <tr><td><code>001_fase1_tenant_master</code></td><td>Tenant &amp; master data: organizations, organization_members/settings/invitations, farm_groups(+members), users, user_preferences/devices, commodities, crop_varieties, regions, symptoms</td></tr>
+  <tr><td><code>002_fase2_lahan</code></td><td>Lahan: plots, plot_managers, plot_boundaries (POLYGON), plot_health_snapshots</td></tr>
+  <tr><td><code>003_fase3_dashboard_records</code></td><td>Catatan operasional terstruktur: organization_records (tipe cycle/task/activity/report/scan/community_post)</td></tr>
+  <tr><td><code>004_auth_sessions</code></td><td>Sesi login: user_sessions (hash)</td></tr>
+  <tr><td><code>005_media_objects</code></td><td>Unggahan berkas: media_objects</td></tr>
+  <tr><td><code>006_google_identities</code></td><td>Identitas Google</td></tr>
+  <tr><td><code>007_dashboard_records_refine</code></td><td>Perapihan kolom &amp; indeks untuk pembacaan cepat</td></tr>
+  <tr><td><code>008_backfill_cycle_columns</code></td><td>Perbaikan data historis: mengisi plot_id/fase/progres/penulis pada siklus otomatis</td></tr>
+</table>
+<h3>4.3 Pilihan desain</h3>
+<ul>
+  <li><b>Idempotent</b>: tiap migrasi dapat dijalankan ulang tanpa merusak; status tercatat di <code>schema_migrations</code>.</li>
+  <li><b>Kunci tetangga</b>: seluruh tabel transaksional menggunakan foreign key ke
+      <code>organizations</code>/<code>plots</code>/<code>users</code> — integritas dijaga level DB.</li>
+  <li><b>Multi-tenant</b>: <code>organization_id</code> selalu ada; lapisan API mem-filter senantiasa,
+      diuji oleh T17 (organisasi B tidak dapat membaca data organisasi A).</li>
+  <li><b>Normalisasi 3NF</b>: perincian pada <code>docs/database/03-normalisasi-dan-aturan.md</code>.</li>
+</ul>
+<h3>4.4 Data demo (untuk demo video &amp; penyusunan penilaian)</h3>
+<p>Perintah sekali jalan, data seluruhnya fiktif dan jelas berlabel:</p>
+<pre>cd server &amp;&amp; npm run seed-demo</pre>
+<p>Menghasilkan organisasi “Gapoktan Tani Makmur DEMO”, 6 lahan berbatas peta (padi, jagung, cabai,
+tomat, kopi), 6 siklus, 4 tugas, 4 aktivitas — dan <b>4 akun per-peran</b>
+(lihat tabel di Bab 9). Seed diblokir di lingkungan produksi kecuali disengaja.</p>
+<div class="page-break"></div>
+
+<!-- ================= 5 DOKUMENTASI PENGEMBANGAN ================= -->
+<h2>5. Dokumentasi Pengembangan Program</h2>
+<h3>5.1 Dari prototype ke aplikasi lengkap</h3>
+<table>
+  <tr><th>Sisi</th><th>Prototype awal</th><th>Tahap akhir</th></tr>
+  <tr><td>Frontend</td><td>Landing + 1 dashboard data simulasi</td><td>33 halaman/mode; dashboard 12 menu terhubung data API; demo dipisah ke <code>#demo</code> berlabel “data contoh”</td></tr>
+  <tr><td>Backend</td><td>Sebagian route CRUD</td><td>10 jalur route; pendaftaran mandiri, undangan, peran, media, cuaca, prediksi, ekspor CSV</td></tr>
+  <tr><td>Database</td><td>Skema dasar</td><td>22 tabel lewat 8 migrasi idempotent + seed demo</td></tr>
+  <tr><td>Keamanan</td><td>—</td><td>Rate limiting (login per-email 8 / per-IP 40; pendaftaran; global 900/5 menit), kebijakan sandi min. 10 huruf+angka, validasi koordinat, prepared statements, 403 IMAGE unggah untuk penyuluh</td></tr>
+  <tr><td>Pengujian</td><td>Hanya CI build</td><td>31 skenario API + 5 unit klien + 33 smoke render + CI full</td></tr>
+</table>
+<h3>5.2 Modul frontend</h3>
+<pre>
+src/
+  app/App.jsx                     hash router seluruh halaman
+  features/landing/               halaman publik: #top #fitur #faq #kontak
+  features/about/                 Tentang + data resmi BPS (grafik)
+  features/auth/                  #masuk, #daftar, #undangan/&lt;token&gt;
+  features/dashboard/
+    pages/DashboardPages.jsx      KPI, lahan, siklus, catatan, cuaca,
+                                  prediksi, laporan CSV, peta, anggota,
+                                  pengaturan, akun saya
+    pages/HealthCommunityPages.jsx  kesehatan lahan &amp; komunitas
+    data/apiClient.js             pembungkus REST + penanganan sesi
+    data/DashboardDataContext.jsx pemuatan sekali lalu dipakai bersama
+  shared/ui/                      komponen ulang (Brand, Button, dsb.)
+  shared/styles/                  tema terang/gelap persist di localStorage
+</pre>
+<h3>5.3 Modul backend</h3>
+<pre>
+server/
+  src/routes/   auth.js        pendaftaran, masuk, keluar, sesi Google
+                account.js     profil: ubah nama, ganti sandi (mencabut sesi lain)
+                organizations.js  anggota, undangan, pengaturan, ringkasan KPI
+                plots.js       CRUD lahan + GeoJSON + filter status kritis
+                records.js     catatan terstruktur per tipe
+                media.js       unggah (≤10 MB, salah tipe ditolak), unduh
+                weather.js     Open-Meteo lewat koordinat region
+                predictions.js perkiraan hasil (benchmark komoditas)
+                reference.js   komoditas, variasi, region, gejala
+                health.js      health check
+  src/services/ db.js (pool mysql2), validate.js, password.js,
+                session.js, rate-limit, weather, predict
+  test/api.test.js             31 skenario uji API (Lampiran C)
+</pre>
+<h3>5.4 Migrasi &amp; seed</h3>
+<p>Menjalankan <code>npm run db:migrate</code> mengeksekusi migrasi belum-terpakai secara
+berurutan (lihat 4.2). Default katalog referensi (komoditas, region, gejala) dibangun oleh
+<code>db/seeds/000_reference_catalog.sql</code>. Seed demo opsional via 4.4.</p>
+<h3>5.5 Deployment</h3>
+<ul>
+  <li>Frontend → Vercel (<code>vercel.json</code>); API → Railway/Render atau VPS dengan
+      <code>docker-compose.yml</code> (web + api + mysql); panduan lengkap
+      <code>docs/PANDUAN-DEPLOY.md</code> + <code>docs/DEPLOY.md</code>.</li>
+  <li>Demo penilaian dapat dibuka dengan <code>npm run dev:all</code> (API :4000 + web :5173).</li>
+  <li><b>Status deploy produksi:</b> <span class="fill">[ISI-Oleh-Mahasiswa: URL produksi bila ada / “menjalankan lokal”]</span></li>
+</ul>
+<div class="page-break"></div>
+
+<!-- ================= 6 HAK AKSES ================= -->
+<h2>6. Hak Akses Pengguna</h2>
+<p>Peran menempel keanggotaan organisasi (<code>organization_members</code>), bukan global — satu akun
+bisa menjadi anggota beberapa organisasi dengan peran berbeda. Pemilik organisasi menyetel
+opsi “Akses baca untuk penyuluh”.</p>
+<table>
+  <tr><th>Peran</th><th>Dapat</th><th>Tidak dapat</th><th>Dibuktikan</th></tr>
+  <tr><td>Administrator</td><td>Semua: profil, pengaturan organisasi, anggota &amp; undangan, lahan, siklus, catatan</td><td>—</td><td>T18, T31</td></tr>
+  <tr><td>Manajer lapangan</td><td>Tambah/ubah/hapus lahan, siklus tanam, seluruh catatan operasional</td><td>Undang/ubah anggota, pengaturan organisasi</td><td>T13, T14, T18, T31</td></tr>
+  <tr><td>Petani</td><td>Catat aktivitas, tugas, panen, scan; unggah foto</td><td>Tambah lahan, buat siklus, undang anggota</td><td>T19, T20, T21</td></tr>
+  <tr><td>Penyuluh</td><td>Baca saja (bila akses baca diaktifkan admin)</td><td>Seluruh tulisan, termasuk unggah foto</td><td>T31 (bug unggah ditemukan &amp; diperbaiki)</td></tr>
+  <tr><td>Pengunjung publik</td><td>Landing, Tentang (data BPS agregat), demo berlabel</td><td>Semua data organisasi</td><td>T02, T09</td></tr>
+</table>
+<p>Isolasi antar organisasi berdiri di atas peran: apa pun perannya, sesi organisasi A
+tidak dapat membaca/mengubah/menghapus data organisasi B (<b>T17</b>: 403/404 tanpa kebocoran).</p>
+<div class="page-break"></div>
+
+<!-- ================= 7 PENGUJIAN ================= -->
+<h2>7. Validasi dan Hasil Pengujian</h2>
+<h3>7.1 Ringkasan</h3>
+<table>
+  <tr><th>Lapisan</th><th>Ranah</th><th>Jml kasus</th><th>Hasil</th></tr>
+  <tr><td>API integrasi (MySQL 8, DB uji <code>mapan_test</code> terpisah)</td><td><code>npm --prefix server run test:report</code></td><td>31</td><td class="lulus">31/31 LULUS</td></tr>
+  <tr><td>Unit klien</td><td><code>npm run test:web</code></td><td>5</td><td class="lulus">5/5 LULUS</td></tr>
+  <tr><td>Smoke render (Vite SSR, 33 halaman/mode)</td><td><code>npm run test:smoke</code></td><td>33</td><td class="lulus">33/33 LULUS</td></tr>
+  <tr><td>Constraint basis data (fase 1–2, menolak data salah)</td><td><code>db/verify/</code></td><td>5</td><td class="lulus">5/5 LULUS</td></tr>
+  <tr><td>Build + sintaks backend</td><td><code>npm run check</code></td><td>—</td><td class="lulus">LULUS</td></tr>
+</table>
+<h3>7.2 Pengujian API end-to-end (hasil run nyata)</h3>
+<p>Sumber: <code>docs/hasil-pengujian-api.md</code> (dibangkitkan otomatis dari
+<code>server/test/api.test.js</code>, run 2026-10-29, Node v22.22.2, MySQL 8).</p>
+<table>
+  <tr><th>Kode</th><th>Skenario &amp; hasil diharapkan</th><th>Hasil</th></tr>
+  <tr><td>T01</td><td>GET /api/health → 200 dan database tersambung</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T02</td><td>endpoint tak dikenal: anonim (401, tak bocor rute), login (404 terformat)</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T03</td><td>register valid → 201, cookie sesi, peran administrator</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T04</td><td>sesi setelah register → pengguna terbaca</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T05</td><td>register email ganda → 409</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T06</td><td>register sandi lemah / email salah / wilayah kosong → 400</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T07</td><td>login sandi salah → 401 tanpa cookie</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T08</td><td>login valid → 200 + cookie sesi</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T09</td><td>akses API tanpa sesi → 401</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T10</td><td>logout mencabut sesi: token lama dipakai ulang → 401</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T11</td><td>ubah nama profil</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T12</td><td>ganti sandi: salah→401; lemah→400; valid→200 dan sandi baru berlaku</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T13</td><td>buat lahan → 201 dan muncul di daftar</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T14</td><td>validasi lahan: nama kosong / luas ≤ 0 → 400</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T15</td><td>ubah lahan → data konsisten; validasi ubah</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T15b</td><td>siklus otomatis dari lahan tertaut → ke petak dan terhitung di ringkasan fase</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T16</td><td>KPI dashboard menghitung lahan</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T17</td><td><b>isolasi tenant</b>: organisasi B tak bisa baca/ubah/hapus data organisasi A</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T18</td><td>undang petani → terima undangan → setujui admin → login</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T19</td><td><b>403 petani</b>: buat/ubah/hapus lahan dan mengundang</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T20</td><td>petani boleh mencatat aktivitas dan membacanya kembali</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T21</td><td><b>403 petani</b> membuat siklus (hanya admin/manajer)</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T22</td><td> jenis catatan tak dikenal → 400</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T23</td><td>unggah berkas >10 MB ditolak (413/400)</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T24</td><td>unggah berkas palsu (bukan gambar) ditolak 400</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T25</td><td>unggah gambar valid → 201, lalu dapat diunduh</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T26</td><td>cuaca tanpa koordinat region → pesan ramah (bukan 500)</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T27</td><td>endpoint prediksi merespons tanpa error server</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T28</td><td>hapus lahan → hilang dari daftar; 404 bila dihapus lagi</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T29</td><td>login: 8× salah → diblokir 429 (brute-force per-email)</td><td class="lulus">LULUS</td></tr>
+  <tr><td>T31</td><td>seed demo: 4 akun per peran masuk dengan hak sesuai peran</td><td class="lulus">LULUS</td></tr>
+</table>
+<h3>7.3 Pengujian hak akses &amp; isolasi tenant</h3>
+<p>Terdistribusi di tabel 7.2: T02/T09 (anonim), T19/T21 (403 petani), T23/T24 (unggah berbatas),
+T17 (isolasi organisasi), T31 (4 peran login). Laporan lengkap tiap kasus ada di
+<code>docs/hasil-pengujian-api.md</code>.</p>
+<h3>7.4 Pengujian UI manual (browser sungguhan)</h3>
+<p>Checklist mengikuti <code>docs/skenario-demo.md</code>; diisi saat perekaman demo:</p>
+<table>
+  <tr><th>No</th><th>Skenario</th><th>Hasil diharapkan</th><th>Status</th></tr>
+  <tr><td>1</td><td>Buka landing → CTA “Buat akun organisasi”</td><td>Arah ke #daftar</td><td class="fill">☐</td></tr>
+  <tr><td>2</td><td>Daftar organisasi baru → masuk dashboard</td><td>Kartu “Langkah awal” + empty state lahan</td><td class="fill">☐</td></tr>
+  <tr><td>3</td><td>Tambah lahan (kota + luas)</td><td>Siklus otomatis dibuat; KPI tergapai</td><td class="fill">☐</td></tr>
+  <tr><td>4</td><td>Catat aktivitas → dashboard</td><td>Terhitung ke KPI &amp; grafik fase</td><td class="fill">☐</td></tr>
+  <tr><td>5</td><td>Ganti peran petani → coba tambah lahan</td><td>Ditolak (403) dengan pesan ramah</td><td class="fill">☐</td></tr>
+  <tr><td>6</td><td>Ekspor CSV laporan</td><td>berkas unduhan cocok data</td><td class="fill">☐</td></tr>
+  <tr><td>7</td><td>Buka tab cuaca &amp; prediksi</td><td>Data tampil / pesan ramah saat gagal</td><td class="fill">☐</td></tr>
+  <tr><td>8</td><td>Tema terang/gelap + refresh</td><td>Pilihan tetap tersimpan</td><td class="fill">☐</td></tr>
+</table>
+<h3>7.5 CI (GitHub Actions)</h3>
+<p><code>.github/workflows/ci.yml</code> menjalankan pada push/PR:<br/>
+(i) Frontend — <code>npm ci</code>, build, unit test, smoke render;
+(ii) Backend — cek sintaks + uji integrasi bersama <b>service MySQL 8</b> nyata di runner.
+Status CI: <span class="fill">[ISI-Oleh-Mahasiswa: tautan build GitHub terakhir]</span></p>
+<div class="page-break"></div>
+
+<!-- ================= 8 TAMPILAN ================= -->
+<h2>8. Tampilan Aplikasi</h2>
+<p>Tangkapan layar diambil saat perekaman demo; siapkan dulu ukuran jendela 1280×800 atau responsif.</p>
+<h4>8.1 Landing page (publik)</h4><div class="shot">[Tangkap layar: bagian paling atas landing #top dengan logo]</div>
+<h4>8.2 Halaman Tentang — grafik data resmi BPS</h4><div class="shot">[Tangkap layar: #tentang-data]</div>
+<h4>8.3 Pendaftaran organisasi baru (#daftar)</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.4 Dashboard KPI (masuk organisasi nyata)</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.5 Daftar lahan + peta poin &amp; batas</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.6 Siklus tanam &amp; catatan aktivitas</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.7 Cuaca &amp; perkiraan panen</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.8 Laporan + ekspor CSV</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.9 Hak akses ditolak (akun petani mencoba aksi tulis)</h4><div class="shot">[Tangkap layar]</div>
+<h4>8.10 Dashboard demo berlabel “data contoh” (#demo)</h4><div class="shot">[Tangkap layar]</div>
+<div class="page-break"></div>
+
+<!-- ================= 9 DEMO ================= -->
+<h2>9. Demo (Tautan YouTube)</h2>
+<h3>9.1 Tautan video demo</h3>
+<p style="font-size:13pt"><b>Link YouTube:</b>
+<span class="fill nowrap">[ISI-Oleh-Mahasiswa: https://youtu.be/xxxx]</span>
+<br/>Durasi: <span class="fill">[ISI: ±7 menit]</span> · unlisted agar hanya tersebar lewat laporan.</p>
+<h3>9.2 Alur perekaman (sudah disiapkan)</h3>
+<p>Daftar muka penuh ada di <code>docs/skenario-demo.md</code>:</p>
+<ol>
+  <li>0:30 — Landing + pemantauan halaman Tentang (data BPS).</li>
+  <li>1:30 — Daftar organisasi baru → kartu langkah awal → tambah lahan pertama.</li>
+  <li>2:30 — Siklus tanam otomatis, tambah catatan aktivitas + unggah foto.</li>
+  <li>3:30 — Dashboard KPI, cuaca, perkiraan hasil (diterangkan: benchmark, bukan AI).</li>
+  <li>4:30 — Ekspor CSV laporan; buka hasil di Excel.</li>
+  <li>5:30 — Undang petani → login akun petani → aksen kritikal ditolak 403 (hak akses).</li>
+  <li>6:30 — Halaman Akun saya (ubah profil, ganti sandi) + tema terang/gelap; tutup.</li>
+</ol>
+<h3>9.3 Akun demo</h3>
+<p>Buat via <code>cd server &amp;&amp; npm run seed-demo</code> (lihat <code>docs/akun-demo.md</code>):</p>
+<table>
+  <tr><th>Peran</th><th>Email</th><th>Kata sandi</th></tr>
+  <tr><td>Administrator</td><td><code>admin@demo.mapan.id</code></td><td rowspan="4"><code>DemoMapan2026</code></td></tr>
+  <tr><td>Manajer lapangan</td><td><code>manajer@demo.mapan.id</code></td></tr>
+  <tr><td>Petani</td><td><code>petani@demo.mapan.id</code></td></tr>
+  <tr><td>Penyuluh</td><td><code>penyuluh@demo.mapan.id</code></td></tr>
+</table>
+<div class="page-break"></div>
+
+<!-- ================= 10 KESIMPULAN ================= -->
+<h2>10. Kesimpulan &amp; Rencana Pengembangan</h2>
+<h3>10.1 Kesimpulan</h3>
+<ul>
+  <li>Prototype telah dibangun menjadi <b>aplikasi lengkap sesuai ketentuan tugas</b>: tampilan (33
+      halaman/mode), database (22 tabel, 8 migrasi), fitur utama proposal, proses pengolahan data
+      (KPI, catatan, cuaca, prediksi benchmark, ekspor CSV), hak akses 4 peran + isolasi tenant,
+      serta validasi &amp; pengujian (31 API + 5 unit + 33 smoke + 5 constraint, semua lulus).</li>
+  <li>Pengembangan berbantuan AI (<i>vibe coding</i>) tetap transparan: setiap perubahan dibuktikan
+      lewat <code>docs/CATATAN-REVISI.md</code> dan dijaga oleh uji otomatis + CI.</li>
+</ul>
+<h3>10.2 Pernyataan jujur tentang prediksi</h3>
+<p>Fitur “perkiraan hasil” saat ini adalah <b>benchmark komoditas</b> (angka rata-rata produktivitas
+dengan sumber terbuka dan label jelas) <b>bukan model AI/ML</b>. Pengujian T27 hanya menjamin
+endpoint responsif. Ini dinyatakan eksplisit agar tak terjadi klaim fitur yang tidak ada.</p>
+<h3>10.3 Keterbatasan saat ini</h3>
+<ul>
+  <li>Email verifikasi / reset sandi otomatis belum ada (pemulihan via <code>npm run set-password</code>).</li>
+  <li>Diagnosis penyakit otomatis dari foto scan belum ada — alur scan hanya menyimpan foto + gejala.</li>
+  <li>Mode offline / aplikasi mobile native belum dibangun (kolom dukungan tersedia di skema).</li>
+  <li>Cuaca (Open-Meteo) diperiksa di lingkungan sandbox; perlu disentuh sekali di komputer penilai.</li>
+</ul>
+<h3>10.4 Rencana pengembangan berikutnya</h3>
+<ol>
+  <li>Versi mobile APK (Expo/React Native) — rencana tersedia di
+      <code>docs/plans/planning-apk-mobile.md</code>.</li>
+  <li>Diagnosis tanaman berbasis model (lanjutan dari “scan”).</li>
+  <li>Editor batas lahan (GIS) interaktif; kirim undangan via email otomatis; push notification.</li>
+  <li>Uji E2E browser (Playwright) untuk 5–8 alur utama.</li>
+</ol>
+<div class="page-break"></div>
+
+<!-- ================= LAMPIRAN ================= -->
+<h2>Lampiran</h2>
+<h3>Lampiran A — Kamus data (ringkas)</h3>
+<p>Detail penuh: <code>docs/database/02-kamus-data.md</code>, ERD <code>docs/database/01-erd.md</code>,
+normalisasi <code>03</code>, indeks <code>04</code>. Daftar 22 tabel aktual:</p>
+<table>
+  <tr><th>Kelompok</th><th>Tabel</th></tr>
+  <tr><td>Tenant &amp; master</td><td>organizations, organization_members, organization_settings, organization_invitations, farm_groups, farm_group_members, users, user_preferences, user_devices, commodities, crop_varieties, regions, symptoms</td></tr>
+  <tr><td>Lahan &amp; petak</td><td>plots, plot_managers, plot_boundaries (POLYGON SRID 4326), plot_health_snapshots</td></tr>
+  <tr><td>Operasional</td><td>organization_records (activities/tasks/reports/harvest/scans/cycle/community)</td></tr>
+  <tr><td>Auth, media, sistem</td><td>user_sessions, media_objects, google_identities, schema_migrations</td></tr>
+</table>
+<h3>Lampiran B — Contoh hasil ekspor CSV</h3>
+<p>Ekspor diambil dari data API terkini di sisi klien (BOM UTF-8 — aman dibuka di Excel):</p>
+<pre>
+Nama Lahan,Komoditas,Luas (ha),Status,Fase,Siklus Ke-
+"Sawah Pak Darjo",Padi,0.75,Sehat,Vegetatif,1
+"Kebun Cabai Keluarga",Cabai,0.40,Waspada,Panen,2
+"Kebun Tomat Belakang",Tomat,0.15,Sehat,Sebar Bibit,1
+</pre>
+<p>Berkas yang dihasilkan aplikasi: <code>data-lahan-mapan.csv</code>,
+<code>prediksi-panen.csv</code>, <code>laporan-aktivitas-mapan.csv</code>.</p>
+<h3>Lampiran C — Panduan menjalankan (referensi laporan)</h3>
+<pre>
+# Sekali jalan
+npm run setup         # install frontend + backend
+
+# Database
+#   salin server/.env.example menjadi server/.env, sesuaikan MySQL,
+#   pastikan MySQL berjalan (di Windows: jalankan-mysql.bat)
+npm run db:migrate    # 8 migrasi + katalog referensi
+npm run db:status     # verifikasi
+cd server &amp;&amp; npm run seed-demo   # (opsional) data demo
+
+# Menjalankan aplikasi
+npm run dev:all       # API :4000 + web :5173  →  http://localhost:5173
+
+# Pengujian
+npm test              # unit + smoke render + uji API (DB mapan_test)
+npm run check         # build + cek sintaks backend
+npm --prefix server run test:report   # menulis docs/hasil-pengujian-api.md
+</pre>
+<h3>Lampiran D — Struktur berkas deliverable</h3>
+<table>
+  <tr><th>Deliverable</th><th>Lokasi</th></tr>
+  <tr><td>Source code</td><td>repo MAPAN ini (frontend <code>src/</code>, backend <code>server/</code>)</td></tr>
+  <tr><td>Database</td><td><code>db/migrations/</code> (001–008) + <code>db/seeds/</code>; dump: <span class="fill">[ISI: deliverables/mapan-db-dump.sql bila dibuat]</span></td></tr>
+  <tr><td>Dokumentasi</td><td><code>docs/</code> (REVISI-PROMPT, CATATAN-REVISI, skenario-demo, akun-demo, hasil-pengujian-api, database/)</td></tr>
+  <tr><td>Laporan</td><td><code>docs/laporan/laporan-tahap-akhir.html</code> → PDF via <code>npm run laporan:pdf</code></td></tr>
+  <tr><td>Demo video</td><td>YouTube — link pada Bab 9</td></tr>
+</table>
+
+</div><!-- /sheet -->
+</body>
+</html>
